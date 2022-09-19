@@ -1,6 +1,4 @@
-//const { response } = require('express');
-
-const { stringify } = require('uuid');
+//const { stringify } = require('uuid');
 
 
 (async function () {
@@ -14,7 +12,10 @@ const { stringify } = require('uuid');
         if (err) {
           return console.error('Error acquiring client', err.stack)
         }
-        client.query('SELECT category.id , cat_name, preference.id AS prefId, pref, procon FROM category LEFT JOIN preference ON category.id=preference.cat_id  WHERE userId = $1 ORDER BY cat_name', [userId], async (err, result) => {
+        client.query('SELECT category.id , cat_name, preference.id AS prefId, pref, procon'
+          +' FROM category LEFT JOIN preference ON category.id=preference.cat_id'
+          +' WHERE userId = $1 ORDER BY cat_name', [userId], 
+        async (err, result) => {
           release()
           if (err) {
             return console.error('Error executing query', err.stack)

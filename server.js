@@ -19,25 +19,25 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
 // express.static(root, [options])
-app.use(express.static(path.join(__dirname, 'build')))
-app.use(express.static(path.join(__dirname,'create-cat','dist')))
-app.use(express.static(path.join(__dirname,'review-creator','build')))
+app.use(express.static(path.join(__dirname, '../','upon-review','build')))
+app.use(express.static(path.join(__dirname,'../','create-cat','dist')))
+app.use(express.static(path.join(__dirname,'../','review-creator','build')))
 
 app.get('/', (req,res) => {
-  res.sendFile(path.join(__dirname, 'build','index.html'))
+  res.sendFile(path.join(__dirname, '../','upon-review','build','index.html'))
 });
 
 app.get('/create-cat', (req, res) => {
-  res.sendFile(path.join(__dirname, 'create-cat','dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '../','create-cat','dist', 'index.html'));
 });
 
 app.get('/review-creator', (req, res) => {
-  res.sendFile(path.join(__dirname, 'review-creator','build','index.html'))
+  res.sendFile(path.join(__dirname, '../','review-creator','build','index.html'))
 })
 
 // Category api routes
 app.use('/api/categories', require('./routes/api/categories'))
-app.use('/api/catDb', require('./routes/api/cat-db-api'))
+app.use('/api/review', require('./routes/api/reviews'))
 
 
 

@@ -21,7 +21,7 @@ router.get("/:userId", async (req, response, next) => {
     await getAllCats(setCats, userId)
     categories = await setCats.cats
     setTimeout(() => 1)
-    console.log('categories  ',categories)
+    
     response.send(categories)
   }
   catch (err) {
