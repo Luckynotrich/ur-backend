@@ -2,20 +2,17 @@ const express = require('express')
 const fs = require('fs').promises
 const path = require('path')
 const router = express.Router()
-const cors = require('cors');
+const insertReview = require('../db/review-db-service')
 
-
-let reviews 
-
-
+let reviews = []
 
 router.use(express.urlencoded({ extended: false }))
 
 // Gets all records
-router.get('/', cors(),(req, res) => res.json(reviews))
+router.get('/', (req, res) => res.json(reviews))
 
 // get single member
-router.get('/getone/:id', cors(), (req, res) => {
+router.get('/getone/:id', (req, res) => {
   const found = reviews.some(
     (review) => review.id === parseInt(req.params.id)
   )
@@ -31,17 +28,18 @@ router.get('/getone/:id', cors(), (req, res) => {
 // add new review to array
 router.post('/addNew/', (req, res) => {
   const newReview = {
-    userId: req.body.userId,
     catId: req.body.catId,
-    name: req.body.name,
-    url: req.body.url,
-    date: req.body.date,
-    rating: req.body.rating,
-    prefs: req.body.prefs,
-    text: req.body.text
+    revName: req.body.revName,
+    revURL: req.body.revURL,
+    revDate: req.body.revDate,
+    revRating: req.body.revRating,
+    revText: req.body.revTxt,
+    revPrefs: req.body.propArray,
+
   }
-  if (!newReview.name) {
-    return res.status(status(400).json({ msg: 'Name must be included' }))
+  console.log('newReview.catId ',newReview.catId, ' newReview.revName ',newReview.revName, ' newReview.revURL',newReview.revURL, ' newReview.revDate',newReview.revDate, ' newReview.revRating',newReview.revRating, ' newReview.reviewText ',newReview.reviewText,' newReview.revPrefs ',newReview.revPrefs )
+  if (!newReview.revName) {
+    return res.status((400).json({ msg: 'Name must be included' }))
   }
   reviews.push(newReview)
   res.json(reviews)

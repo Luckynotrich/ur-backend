@@ -1,9 +1,11 @@
 (async function () {
-    getAllReviews = async (setCats, userId) => {
-      return new Promise(resolve => {
-        let { pool } = require('./fs_pool')
+    var format = require('pg-format')
+    let { pool } = require('./fs_pool')
         const { Pool } = require('pg');
         pool = new Pool(pool)
+
+     getAllReviews = async (setCats, userId) => {
+      return new Promise(resolve => {
   
         pool.connect((err, client, release) => {
           if (err) {
@@ -20,7 +22,7 @@
             setTimeout(() =>
             resolve(),1)
   
-            let cats = await result.rows
+            let reviews = await result.rows
             processReview(setReview, reviews)
           })
       });
@@ -29,7 +31,7 @@
   
   
   //convert db rows to review objects
-    let processReview = (setReview, reviews) => {
+    const processReview = (setReview, reviews) => {
        let review = createReview(reviews[0])
       for (i = 0; i < reviews.length; i++) {
         
@@ -55,11 +57,27 @@
           cons: []
         }
     }
-  
-  
+
+
+   insertReview = async(_review)=>{
+    pool.connect((err, client, release) => {
+        if (err) {
+          return console.error('Error acquiring client', err.stack)
+        }
+        client.query( 'INSERT INTO review(cat_id, rev_name, rev_url, rev_date, rating, rev_text) '
+          +' values($1, $2, $3, $4, $5, $6)'
+          +' returning id;',[ _review.catId, _review.revName, _review.revURL, _review.revDate, _review.revRating, _review.revText],
+        async (err, result) => {
+          release()
+          if (err) {
+            return console.error('Error executing query', err.stack)
+          }  })
+          //client.query()
+    })}
     //await getAllCats(setCats,'11d6af03-20ac-4f04-a21c-28ec418a2c18');
     //console.log("outside  ", setCats.cats);
   
   })();
 
   module.exports = getAllReviews;
+  module.exports = insertReview;
