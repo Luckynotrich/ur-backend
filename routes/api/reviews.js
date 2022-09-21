@@ -33,11 +33,11 @@ router.post('/addNew/', (req, res) => {
     revURL: req.body.revURL,
     revDate: req.body.revDate,
     revRating: req.body.revRating,
-    revText: req.body.revTxt,
+    revText: req.body.reviewTxt,
     revPrefs: req.body.propArray,
 
   }
-  console.log('newReview.catId ',newReview.catId, ' newReview.revName ',newReview.revName, ' newReview.revURL',newReview.revURL, ' newReview.revDate',newReview.revDate, ' newReview.revRating',newReview.revRating, ' newReview.reviewText ',newReview.reviewText,' newReview.revPrefs ',newReview.revPrefs )
+  
   if (!newReview.revName) {
     return res.status((400).json({ msg: 'Name must be included' }))
   }
