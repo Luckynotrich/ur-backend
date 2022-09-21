@@ -56,7 +56,7 @@ router.get("/getOne/:id", (req, res) => {
 router.post("/addNew/", (req, res) => {
   console.log("body", req.body);
   const newCategory = {
-    id: uuid.v4(),
+    id: req.params.userId,
     name: req.body.name,
     pros: req.body.pros,
     cons: req.body.cons,
@@ -67,7 +67,7 @@ router.post("/addNew/", (req, res) => {
 
   categories.push(newCategory);
   res.json(categories);
-  insertCat(userId, newCategory.name, newCategory.pros, newCategory.cons);
+  insertCat(newCategory)//userId, newCategory.name, newCategory.pros, newCategory.cons);
 });
 
 // update single member
