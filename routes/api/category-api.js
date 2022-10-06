@@ -1,9 +1,9 @@
 const express = require("express");
 const app = express;
 const router = express.Router();
-const uuid = require("uuid");
 
-const getAllCats = require('../db/cat-db-services')
+
+const getAllCats = require('../db/get-all-cats-db')
 
 
 let categories
@@ -17,9 +17,10 @@ router.get("/:userId", async (req, response, next) => {
    
   try {
     setCats.cats = []
+    console.log('inside categories userId = ',userId)
     await getAllCats(setCats, userId)
     categories = await setCats.cats
-    setTimeout(() => 1)
+    setTimeout(() => 1000)
     
     response.send(categories)
   }
@@ -64,7 +65,7 @@ router.post("/addNew/", (req, res) => {
   if (!newCategory.name) {
     return res.status(400).json({ msg: "Name must be included" });
   }
-
+  console.log("inside post")
   categories.push(newCategory);
   res.json(categories);
   insertCat(newCategory)//userId, newCategory.name, newCategory.pros, newCategory.cons);

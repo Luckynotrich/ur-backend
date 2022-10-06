@@ -28,7 +28,7 @@ app.get('/', (req,res) => {
 });
 
 app.get('/create-cat', (req, res) => {
-  res.sendFile(path.join(__dirname, '../','create-cat','dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '../','create-cat','dist','index.html'));
 });
 
 app.get('/review-creator', (req, res) => {
@@ -36,8 +36,8 @@ app.get('/review-creator', (req, res) => {
 })
 
 // Category api routes
-app.use('/api/categories', require('./routes/api/categories'))
-app.use('/api/reviews', require('./routes/api/reviews'))
+app.use('/api/category-api', require('./routes/api/category-api'))
+app.use('/api/review-api', require('./routes/api/review-api'))
 
 
 

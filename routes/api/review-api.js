@@ -2,7 +2,7 @@ const express = require('express')
 const fs = require('fs').promises
 const path = require('path')
 const router = express.Router()
-const insertReview = require('../db/review-db-service')
+const insertReview = require('../db/insert-review-db')
 
 let reviews = []
 
