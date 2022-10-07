@@ -68,7 +68,7 @@ router.post("/addNew/", (req, res) => {
   console.log("inside post")
   categories.push(newCategory);
   res.json(categories);
-  insertCat(newCategory)//userId, newCategory.name, newCategory.pros, newCategory.cons);
+  insertCat(newCategory)
 });
 
 // update single member

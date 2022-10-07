@@ -1,8 +1,8 @@
-var format = require('pg-format')
+//var format = require('pg-format')
     let { pool } = require('./fs_pool')
     const { Pool } = require('pg');
     pool = new Pool(pool)
-    
+
     insertReview = async (_review) => {
         let id
         pool.connect((err, client, release) => {
@@ -31,5 +31,5 @@ var format = require('pg-format')
     }
 
 
-//module.exports = getAllReviews;
+
 module.exports = insertReview;
