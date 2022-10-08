@@ -27,6 +27,7 @@ router.get('/getone/:id', (req, res) => {
 
 // add new review to array
 router.post('/addNew/', (req, res) => {
+  console.log("body", req.body);
   const newReview = {
     catId: req.body.catId,
     revName: req.body.revName,
