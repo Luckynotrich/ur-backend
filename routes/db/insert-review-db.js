@@ -1,7 +1,7 @@
-//var format = require('pg-format')
-    let { pool } = require('./fs_pool')
-    const { Pool } = require('pg');
-    pool = new Pool(pool)
+
+let db = require('./fs_pool.js');
+const pool = db.getPool();
+
 
     insertReview = async (_review) => {
         let id

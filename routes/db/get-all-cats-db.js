@@ -1,7 +1,7 @@
 
-let { pool } = require('./fs_pool')
-const { Pool } = require('pg');
-pool = new Pool(pool)
+let db = require('./fs_pool.js');
+const pool = db.getPool();
+
 
 module.exports = getAllCats = async (setCats, userId) => {
   

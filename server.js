@@ -12,7 +12,6 @@ const PORT = process.env.PORT || 8080
 app.use('/favicon.ico', express.static('./favicon.ico'))
 
 app.use(logger)
-//app.use(responder)
 
 app.use(express.json())
 
@@ -38,7 +37,6 @@ app.get('/review-creator', (req, res) => {
 // Category api routes
 app.use('/api/category-api', require('./routes/api/category-api'))
 app.use('/api/review-api', require('./routes/api/review-api'))
-
 
 
 // start the server
