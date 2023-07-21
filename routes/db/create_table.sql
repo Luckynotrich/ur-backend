@@ -1,6 +1,7 @@
 create table IF NOT EXISTS public.user(
     id UUID default uuid_generate_v4(),
     email varchar(100) unique not null,
+    userName varchar(100) unique not null,
     password varchar(50),
     primary key(id)
 );

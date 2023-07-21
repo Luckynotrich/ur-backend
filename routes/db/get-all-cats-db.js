@@ -17,13 +17,13 @@ module.exports = getAllCats = async (setCats, userId) => {
         async (err, result) => {
           release()
           if (err) {
-            return console.error('Error executing query', err.stack)
+            return console.error('Error executing query :-(', err.stack)
           }
           setTimeout(() =>
-            resolve(), 1)
+            resolve(), 200)
 
           let cats = await result.rows
-          processCats(setCats, cats)
+         if(cats.length > 0) processCats(setCats, cats)
         })
     });
   })

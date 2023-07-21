@@ -1,60 +1,63 @@
 
-    var format = require('pg-format')
-    let db = require('./fs_pool.js');
-    const pool = db.getPool();
+// var format = require('pg-format')
+let db = require('./fs_pool.js');
+const pool = db.getPool();
 
 
-    getAllReviews = async (setCats, userId) => {
-        return new Promise(resolve => {
+module.exports = getAllReviews = async (setCats, userId) => {
+    return new Promise(resolve => {
 
-            pool.connect((err, client, release) => {
-                if (err) {
-                    return console.error('Error acquiring client', err.stack)
-                }
-                client.query(/* 'SELECT category.id , cat_name, preference.id AS prefId, pref, procon'
-            +' FROM category LEFT JOIN preference ON category.id=preference.cat_id'
-            +' WHERE userId = $1 ORDER BY cat_name', [userId],  */
-                    async (err, result) => {
-                        release()
-                        if (err) {
-                            return console.error('Error executing query', err.stack)
-                        }
-                        setTimeout(() =>
-                            resolve(), 1)
-
-                        let reviews = await result.rows
-                        processReview(setReview, reviews)
-                    })
-            });
-        })
-    }
-
-
-    //convert db rows to review objects
-    const processReview = (setReview, reviews) => {
-        let review = createReview(reviews[0])
-        for (i = 0; i < reviews.length; i++) {
-
-            if (reviews[i].review_name !== review.name) {
-                _setReview.current = review
-                delete review
-                review = createReview(reviews[i])
+        pool.connect((err, client, release) => {
+            if (err) {
+                return console.error('Error acquiring client', err.stack)
             }
-            let pref = { value: reviews[i].pref, id: reviews[i].prefid }
+            client.query(' SELECT r.id, r.cat_id, rev_url, rev_date, rating, rev_text, c.pref_id, p.procon'
+                + ' AS procon'
+                + ' FROM review r'
+                + ' LEFT JOIN checked c ON c.rev_id = r.id'
+                + ' LEFT JOIN preference p ON c.pref_id = p.id'
+                + ' LEFT JOIN category ON category.id = r.cat_id' 
+                + ' WHERE category.userId = $1 ORDER BY r.cat_id;', [userId],
+                async (err, result) => {
+                    release()
+                    if (err) {
+                        return console.error('Error executing query :-(', err.stack)
+                    }
+                    setTimeout(() =>
+                        resolve(), 200)
 
-            reviews[i].procon ? review.pros.push(pref) : review.cons.push(pref)
+                    let reviews = await result.rows
+                    if (reviews.length > 0) processReview(setReview, reviews)
+                })
+        });
+    })
+}
+
+
+//convert db rows to review objects
+const processReview = (setReview, reviews) => {
+    let review = createReview(reviews[0])
+    for (i = 0; i < reviews.length; i++) {
+
+        if (reviews[i].review_name !== review.name) {
+            _setReview.current = review
+            delete review
+            review = createReview(reviews[i])
         }
-        _setReview.current = review
+        let pref = { value: reviews[i].pref, id: reviews[i].prefid }
+
+        reviews[i].procon ? review.pros.push(pref) : review.cons.push(pref)
     }
+    _setReview.current = review
+}
 
 
-    const createReview = (pref) => {
+const createReview = (pref) => {
 
-        return this.Review = {
-            name: pref.review_name,
-            id: pref.id,
-            pros: [],
-            cons: []
-        }
+    return this.Review = {
+        name: pref.review_name,
+        id: pref.id,
+        pros: [],
+        cons: []
     }
-module.exports = getAllReviews;
+}

@@ -3,13 +3,35 @@ const fs = require('fs').promises
 const path = require('path')
 const router = express.Router()
 const insertReview = require('../db/insert-review-db')
+const getAllReviews = require('../db/get-all-reviews-db')
 
 let reviews = []
 
 router.use(express.urlencoded({ extended: false }))
 
 // Gets all records
-router.get('/', (req, res) => res.json(reviews))
+router.get('/:userId', (req, res) => {
+  let userId = req.params.userId;
+
+  try {
+    setReviews.reviews = []
+    getAllReviews(setReviews, userId)
+    reviews = setReviews.reviews
+    setTimeout(() => 1000)
+
+    res.send(reviews)
+  }
+
+  catch (err) {
+    console.log(err)
+    console.error(`Could not get reviews: ${err}`);
+  }
+});
+const setReviews = {
+  set current(review) {
+    this.reviews.push(review);
+  }
+}
 
 // get single member
 router.get('/getone/:id', (req, res) => {
@@ -26,7 +48,7 @@ router.get('/getone/:id', (req, res) => {
 })
 
 // add new review to array
-router.post('/addNew/', (req, res) => {
+router.post('/addNew/:userId', (req, res) => {
   console.log("body", req.body);
   const newReview = {
     catId: req.body.catId,
@@ -43,7 +65,7 @@ router.post('/addNew/', (req, res) => {
     return res.status((400).json({ msg: 'Name must be included' }))
   }
   reviews.push(newReview)
-  res.json(reviews)
+  res.json(newReview)
   insertReview(newReview)
 })
 

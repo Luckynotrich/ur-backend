@@ -41,7 +41,7 @@ const setCats = {
 }
 
 
-// get single member
+//************************************************** */ get single member********************************************
 router.get("/getOne/:id", (req, res) => {
   const found = categories.some(
     (category) => category.id === parseInt(req.params.id)
@@ -55,35 +55,43 @@ router.get("/getOne/:id", (req, res) => {
   }
 });
 
-// add new category to array
+// **********************************************add new category to array*******************************************
 router.post("/addNew/", async (req, res) => {
 
   let form = new multiparty.Form();
-
+  let holder = '', key = '';
+  let formFields = {};
 
   let pros = [], cons = [];
   let newCategory = { pros, cons }
 
- await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
+  await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
     await Object.keys(fields).forEach((property) => {//async await must resolve 
-      
+     
       if (fields[property].toString().length > 0 && fields[property].toString() !== ' ') {
-        if (property.startsWith('pro')) newCategory.pros.push(fields[property].toString())
-        else if (property.startsWith('con')) newCategory.cons.push(fields[property].toString())
-        else newCategory[property] = fields[property].toString();
+        if (property.includes('pro')) newCategory.pros.push(fields[property].toString())
+        else if (property.includes('con')) newCategory.cons.push(fields[property].toString())
+        else if (property.includes('name')) newCategory.name = fields[property].toString();
+        else if (property.includes('userId')) newCategory.userId = fields[property].toString();
       }
-      if (property === ('name') && newCategory[property].length === 0) {
+      if (property.includes('name') && newCategory[property] && newCategory[property].length === 0) {
         return res.status(400).json({ msg: "Name must be included" });
       }
     }
     )
+    if (!newCategory.name) {
+      console.log(newCategory + '\n');
+      return res.status(400).json({ msg: "Data error: name not found" });
+    }
     await categories.push(newCategory)     //inside form.parse is the key!
     await insertCat(newCategory)           //inside form.parse
-    await res.status(200).json(categories) //inside form.parse
-  })
+    await console.log('newCategory ',newCategory)
+    await res.status(200).json(newCategory) //inside form.parse
+  
+   })
 });
 
-// update single member
+//************************************************************* */ update single member*********************************
 router.put("/updateOne/:id", (req, res) => {
   const found = categories.some(
     (category) => category.id === parseInt(req.params.id)
@@ -113,7 +121,7 @@ router.put("/updateOne/:id", (req, res) => {
   }
 });
 
-//delet one
+//******************************************************************************** */delet one************************
 router.delete('/deleteOne/:id', (req, res) => {
   const found = members.some(member => member.id === parseInt(req.params.id));
 
