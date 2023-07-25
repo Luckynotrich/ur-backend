@@ -22,7 +22,7 @@ router.get("/:userId", async (req, response, next) => {
     //console.log('inside getAllCats userId = ',userId)
     await getAllCats(setCats, userId)
     categories = await setCats.cats
-    setTimeout(() => 1000)
+    setTimeout(() => 100)
 
     response.send(categories)
   }

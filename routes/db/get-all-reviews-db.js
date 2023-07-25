@@ -4,7 +4,7 @@ let db = require('./fs_pool.js');
 const pool = db.getPool();
 
 
-module.exports = getAllReviews = async (setCats, userId) => {
+module.exports = getAllReviews = async (setReview, userId) => {
     return new Promise(resolve => {
 
         pool.connect((err, client, release) => {
@@ -24,7 +24,7 @@ module.exports = getAllReviews = async (setCats, userId) => {
                         return console.error('Error executing query :-(', err.stack)
                     }
                     setTimeout(() =>
-                        resolve(), 200)
+                        resolve(), 100)
 
                     let reviews = await result.rows
                     if (reviews.length > 0) processReview(setReview, reviews)
@@ -35,7 +35,7 @@ module.exports = getAllReviews = async (setCats, userId) => {
 
 
 //convert db rows to review objects
-const processReview = (setReview, reviews) => {
+const processReview = (_setReview, reviews) => {
     let review = createReview(reviews[0])
     for (i = 0; i < reviews.length; i++) {
 

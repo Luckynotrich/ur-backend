@@ -12,8 +12,12 @@ module.exports = getAllCats = async (setCats, userId) => {
         return console.error('Error acquiring client', err.stack)
       }
       client.query('SELECT category.id , cat_name, preference.id AS prefId, pref, procon'
-        + ' FROM category LEFT JOIN preference ON category.id=preference.cat_id'
-        + ' WHERE userId = $1 ORDER BY cat_name', [userId],
+        + ' FROM category'
+        +' LEFT JOIN preference ON category.id=preference.cat_id'
+        + ' WHERE EXISTS (SELECT category.id FROM category'
+        + ' WHERE category.userId = $1)'
+        + ' AND category.userId = $1'
+        + ' ORDER BY cat_name', [userId],
         async (err, result) => {
           release()
           if (err) {
