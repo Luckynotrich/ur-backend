@@ -13,24 +13,29 @@ insertCat = async (_category) => {
         if (err) {
             return console.error('Error acquiring client', err.stack)
         }
+        let id = 0;
         client.query('INSERT INTO category(userid, cat_name) '
             + ' values($1, $2)'
             + ' returning id;', [_category.userId, _category.name],
             async (err, result) => {
                 id = await result.rows[0].id
-                if (procons.length > 0) {
-                    let values = await procons.map((pc) => {
-                        [id, pc.pref, pc.procon ]
-                        client.query('INSERT INTO preference(cat_id,pref,procon) VALUES($1,$2,$3)', [id, pc.pref, pc.procon])
-                    })
-                }
-                release()
+                console.log('insertCat id = ', await id)
+                // if (procons.length > 0) {
+                //     let values = await procons.map((pc) => {
+                //         [id, pc.pref, pc.procon ]
+                //         client.query('INSERT INTO preference(cat_id,pref,procon) VALUES($1,$2,$3)', [id, pc.pref, pc.procon])
+                //     })
+                // }
+                
+                return id;
+                 release();
                 if (err) {
                     return console.error('Error executing query', err.stack)
                 }
+                
             })
-
-
+            
+            
     })
 }
 const createProcon = (_procons, pros, cons) => {

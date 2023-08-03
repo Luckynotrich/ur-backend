@@ -5,8 +5,9 @@ const multiparty = require('multiparty');
 
 
 const getAllCats = require('../db/get-all-cats-db')
-const insertCat = require('../db/insert-cat-db')
-
+// const insertCat = require('../db/insert-cat-db')
+let db = require('../db/fs_pool.js');
+const pool = db.getPool();
 
 let categories = [];
 
@@ -35,7 +36,7 @@ router.get("/:userId", async (req, response, next) => {
 const setCats = {
   set current(category) {
     this.cats.push(category);
-    //console.log('sc = ',category)
+    // console.log('sc = ',category)
   },
   cats: []
 }
@@ -59,40 +60,58 @@ router.get("/getOne/:id", (req, res) => {
 router.post("/addNew/", async (req, res) => {
 
   let form = new multiparty.Form();
-  let holder = '', key = '';
-  let formFields = {};
-
-  let pros = [], cons = [];
-  let newCategory = { pros, cons }
+ 
+  // let newCategory ={name:'', userId:'', pros:[], cons:[]};
+  let name = '', userId = '';
 
   await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
     await Object.keys(fields).forEach((property) => {//async await must resolve 
-     
-      if (fields[property].toString().length > 0 && fields[property].toString() !== ' ') {
-        if (property.includes('pro')) newCategory.pros.push(fields[property].toString())
-        else if (property.includes('con')) newCategory.cons.push(fields[property].toString())
-        else if (property.includes('name')) newCategory.name = fields[property].toString();
-        else if (property.includes('userId')) newCategory.userId = fields[property].toString();
+      if (fields[property] && fields[property].toString().length > 0 && fields[property].toString() !== ' ') {
+        console.log('property, fields[property].toString() = ',property, fields[property].toString())
+       if (property.includes('name')) name = fields[property].toString();
+        else if (property.includes('userId')) userId = fields[property].toString();
       }
-      if (property.includes('name') && newCategory[property] && newCategory[property].length === 0) {
+      if (property.includes('name') && userId && name.length === 0) {
+        console.log('name does not exist')
         return res.status(400).json({ msg: "Name must be included" });
       }
     }
     )
-    if (!newCategory.name) {
-      console.log(newCategory + '\n');
+    if (!name) {
       return res.status(400).json({ msg: "Data error: name not found" });
     }
-    await categories.push(newCategory)     //inside form.parse is the key!
-    await insertCat(newCategory)           //inside form.parse
-    await console.log('newCategory ',newCategory)
-    await res.status(200).json(newCategory) //inside form.parse
-  
+    
+    pool.connect((err, client, release) => {
+      if (err) {
+          return console.error('Error acquiring client', err.stack)
+      }
+      let id = 0;
+      client.query('INSERT INTO category(userid, cat_name) '
+          + ' values($1, $2)'
+          + ' returning id;', [userId, name],
+          async (err, result) => {
+            // timeOut = setTimeout(() => 200)
+            await res.status(200).json(id = await result.rows[0].id)
+              console.log('insertCat id = ', await id)
+            
+               release();
+              if (err) {
+                  return console.error('Error executing query', err.stack)
+              }
    })
 });
-
+  })
+});
 //************************************************************* */ update single member*********************************
 router.put("/updateOne/:id", (req, res) => {
+  let form = new multiparty.Form();
+ 
+
+  let pros = [], cons = [];
+  let newCategory = { pros, cons }
+  if (property.includes('pro')) newCategory.pros.push(fields[property].toString())
+  else if (property.includes('con')) newCategory.cons.push(fields[property].toString())
+
   const found = categories.some(
     (category) => category.id === parseInt(req.params.id)
   );
