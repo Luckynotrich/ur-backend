@@ -90,10 +90,7 @@ router.post("/addNew/", async (req, res) => {
           + ' values($1, $2)'
           + ' returning id;', [userId, name],
           async (err, result) => {
-            // timeOut = setTimeout(() => 200)
             await res.status(200).json(id = await result.rows[0].id)
-              console.log('insertCat id = ', await id)
-            
                release();
               if (err) {
                   return console.error('Error executing query', err.stack)
@@ -103,42 +100,47 @@ router.post("/addNew/", async (req, res) => {
   })
 });
 //************************************************************* */ update single member*********************************
-router.put("/updateOne/:id", (req, res) => {
+router.put("/updateOne/:catId", async (req, res) => {
   let form = new multiparty.Form();
- 
+  
+  console.log('req.params.id = ', req.params.catId)
+  const found = categories.some(
+    (category) => category.id === parseInt(req.params.catId)
+  );
 
   let pros = [], cons = [];
-  let newCategory = { pros, cons }
-  if (property.includes('pro')) newCategory.pros.push(fields[property].toString())
-  else if (property.includes('con')) newCategory.cons.push(fields[property].toString())
-
-  const found = categories.some(
-    (category) => category.id === parseInt(req.params.id)
-  );
+  let updCategory = {id: req.params.catId, pros, cons }
   if (found) {
-    const updCategory = req.body;
-    categories.forEach((category) => {
-      if (category.id === parseInt(req.params.id)) {
-        category.name = updCategory ? updCategory.name : category.name;
-        category.pros.forEach((pro) => {
-          if (category.pro !== updCategory.pro)
-            // eslint-disable-next-line curly
-            category.pro = updCategory.pro ? updCategory.pro : category.pro;
-        });
-        category.cons.forEach((con) => {
-          if (category.con !== updCategory.con)
-            // eslint-disable-next-line curly
-            category.con = updCategory.con ? updCategory.con : category.con;
-        });
+  await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
+  if (property.includes('pro')) updCategory.pros.push(fields[property].toString())
+  else if (property.includes('con')) updCategory.cons.push(fields[property].toString())
+  })
+}
+  console.log('updCategory = ', updCategory)
+   if (found) {
+    
+//     categories.forEach((category) => {
+//       if (category.id === parseInt(req.params.catId)) {
+//         category.name = updCategory.name ? updCategory.name : category.name;
+//         category.pros.forEach((pro) => {
+//           if (category.pro !== updCategory.pro)
+//             // eslint-disable-next-line curly
+//             category.pro = updCategory.pro ? updCategory.pro : category.pro;
+//         });
+//         category.cons.forEach((con) => {
+//           if (category.con !== updCategory.con)
+//             // eslint-disable-next-line curly
+//             category.con = updCategory.con ? updCategory.con : category.con;
+//         });
 
-        category.cons = req.params.cons;
+//         category.cons = req.params.cons;
         res.json({ msg: "Category updated", category });
-      }
-    });
-  } else {
-    res.status(400).json({ msg: `Category ${req.params.id} not found` });
+      //  }
+//     });
+   } else {
+//     res.status(400).json({ msg: `Category ${req.params.id} not found` });
   }
-});
+ });
 
 //******************************************************************************** */delet one************************
 router.delete('/deleteOne/:id', (req, res) => {
