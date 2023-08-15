@@ -20,12 +20,12 @@ insertCat = async (_category) => {
             async (err, result) => {
                 id = await result.rows[0].id
                 console.log('insertCat id = ', await id)
-                // if (procons.length > 0) {
-                //     let values = await procons.map((pc) => {
-                //         [id, pc.pref, pc.procon ]
-                //         client.query('INSERT INTO preference(cat_id,pref,procon) VALUES($1,$2,$3)', [id, pc.pref, pc.procon])
-                //     })
-                // }
+                if (procons.length > 0) {
+                    let values = await procons.map((pc) => {
+                        [id, pc.pref, pc.procon ]
+                        client.query('INSERT INTO preference(cat_id,pref,procon) VALUES($1,$2,$3)', [id, pc.pref, pc.procon])
+                    })
+                }
                 
                 return id;
                  release();
