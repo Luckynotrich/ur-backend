@@ -1,5 +1,7 @@
 
-const open = require('open')
+// const open = require('open')
+// const https = require('https')
+const fs = require('fs');
 const express = require('express')
 const path = require('path')
 const cors = require('cors')
@@ -8,7 +10,6 @@ const apndFile = require('../utils/apnd-file.js');
 require('dotenv').config({debug: true})
 const PORT = process.env.PORT || 8081
 const logger = require('./middleware/logger.js')
-const { request } = require('http')
 
 const app = express()
 app.use(cors())
@@ -28,31 +29,22 @@ let reqPath = `\n${idData} path: ${req.path} \n`;
   next() // calling next middleware function or handler
 })
 // Category api routes
-app.use('/api/category-api', require('./routes/api/category-api'))
-app.use('/api/review-api', require('./routes/api/review-api'))
-
-// express.static(root, [options])
-// app.use(express.static(path.join(__dirname, '../','upon-review','build')))
-// app.use(express.static(path.join(__dirname,'../','create-cat','dist')))
-// app.use(express.static(path.join(__dirname,'../','review-creator','build')))
-
-// app.get('/*', (req,res) => {
-//   res.sendFile(path.join(__dirname, '../','upon-review','build','index.html'))
-// });
-
-// app.get('/create-cat', (req, res) => {
-//   res.sendFile(path.join(__dirname, '../','create-cat','dist','index.html'));
-// });
-
-// app.get('/review-creator', (req, res) => {
-//   res.sendFile(path.join(__dirname, '../','review-creator','build','index.html'))
-// })
+app.use('/api/category-api', require('./routes/api/category-api.js'))
+app.use('/api/preference-api', require('./routes/api/preference-api.js'))
+app.use('/api/review-api', require('./routes/api/review-api.js'))
+app.use('/dist/', express.static(path.join(__dirname, '../','upon-review','build','dist')))
+app.use('/_snowpack/', express.static(path.join(__dirname, '../','upon-review','build','_snowpack')))
 
 
-
-
+app.get('/*', (req,res) => {
+  res.sendFile(path.join(__dirname, '../','upon-review','build','index.html'))
+});
 
 // start the server
+/* https.createServer({
+      key: fs.readFileSync('key.pem'),
+      cert: fs.readFileSync('cert.pem'),
+}, app) */
 app.listen(
   PORT,
   console.log(`Something gruesome is happening at http://localhost:${PORT}`)

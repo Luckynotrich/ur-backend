@@ -24,7 +24,8 @@
     "webpack-cli": "^4.10.0"
   },
   "scripts": {
-    "srv": "node server.js",
+    "srv": "node server_https.js",
+    "safe": "node server_https.js",
     "watch": "clear && nodemon server",
     "con": "concurrently \"npm run watch\" \"npm run start\"  ",
     "check-env": "node -e 'console.log(process.env)' | grep npm"

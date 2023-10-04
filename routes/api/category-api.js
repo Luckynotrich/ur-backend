@@ -1,5 +1,5 @@
 const express = require("express");
-const app = express;
+// const app = express;
 const router = express.Router();
 const multiparty = require('multiparty');
 
@@ -25,7 +25,7 @@ router.get("/:userId", async (req, response, next) => {
     categories = await setCats.cats
     setTimeout(() => 100)
 
-    response.send(categories)
+    await response.send(categories)
   }
   catch (err) {
     console.log(err)
