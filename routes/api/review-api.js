@@ -14,16 +14,16 @@ let reviews = []
 router.use(express.urlencoded({ extended: false }))
 
 // Gets all records
-router.get('/:userId', (req, res) => {
+router.get('/:userId', async (req, res) => {
   let userId = req.params.userId;
 
   try {
     setReviews.reviews = []
-    getAllReviews(setReviews, userId)
-    reviews = setReviews.reviews
-    setTimeout(() => 1000)
-
-    res.send(reviews)
+    await getAllReviews(setReviews, userId)
+    reviews = await setReviews.reviews
+    setTimeout(() => 500)
+    // console.log('reviews = ', reviews)
+    await res.send(reviews)
   }
 
   catch (err) {
@@ -124,7 +124,7 @@ router.post('/addNew/', async (req, res) => {
         if (!err) {
           revId = await result.rows[0].id
           /* let values =  */
-          await newReview.revPrefs.map((pref,i) => {
+          await newReview.revPrefs.map((pref, i) => {
             [revId, i]
             let id = client.query('INSERT INTO checked(rev_id,pref_id) VALUES($1,$2)'
               + ' returning id', [revId, pref])

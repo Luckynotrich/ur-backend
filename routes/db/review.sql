@@ -1,4 +1,4 @@
-SELECT r.id, r.cat_id, rev_url, rev_date, rating, rev_text, c.pref_id, p.procon
+SELECT r.id, r.name, r.cat_id, rev_url, rev_date, rating, rev_text, c.pref_id, p.procon
 AS procon 
  FROM review r LEFT JOIN checked c ON c.rev_id = r.id 
  LEFT JOIN preference p ON c.pref_id = p.id

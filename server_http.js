@@ -22,7 +22,7 @@ app.use((req, res, next) => {
   const now = new Date();
   let idData = date.format(now, 'YYYY/MM/DD HH:mm:ss');
 let reqPath = `\n${idData} path: ${req.path} \n`;
-  
+
   apndFile('log_app.log',reqPath);
   
   errorPath = req.path;

@@ -5,7 +5,7 @@ const multiparty = require('multiparty');
 
 
 const getAllCats = require('../db/get-all-cats-db')
- const insertPrefs = require('../db/update-prefs-db')
+const insertPrefs = require('../db/insert-prefs-db.js')
 let db = require('../db/fs_pool.js');
 const pool = db.getPool();
 
@@ -20,11 +20,11 @@ router.get("/:userId", async (req, response, next) => {
 
   try {
     setCats.cats = []
-    //console.log('inside getAllCats userId = ',userId)
+    // console.log("get cats userId = ", userId)
     await getAllCats(setCats, userId)
     categories = await setCats.cats
-    setTimeout(() => 100)
-
+    setTimeout(() => {100})
+    // console.log('categories = ',categories)
     await response.send(categories)
   }
   catch (err) {
@@ -36,7 +36,7 @@ router.get("/:userId", async (req, response, next) => {
 const setCats = {
   set current(category) {
     this.cats.push(category);
-    // console.log('sc = ',category)
+    //  console.log('sc = ',category)
   },
   cats: []
 }
@@ -80,7 +80,9 @@ router.post("/addNew/", async (req, res) => {
     if (!name) {
       return res.status(400).json({ msg: "Data error: name not found" });
     }
-
+    if (categories.some((category) => category.name === name)) {
+      return res.status(200).json({ msg: "Category name current" });
+    }
     pool.connect((err, client, release) => {
       if (err) {
         return console.error('Error acquiring client', err.stack)
@@ -91,7 +93,7 @@ router.post("/addNew/", async (req, res) => {
         + ' returning id;', [userId, name],
         async (err, result) => {
           await res.status(200).json(id = await result.rows[0].id)
-          await setTimeout(() => { categories.push({ id, name, userId, pros: [], cons: [] }) }, 1000)
+          await setTimeout(() => { categories.push({ id, name, userId }) }, 1000)
           release();
           if (err) {
             return console.error('Error executing query', err.stack)
@@ -122,37 +124,55 @@ router.put("/updateOne/", async (req, res) => {
               category = categories.find((category) => Number(category.id) === Number(updCategory.id))
             }
           }
-          else if (property.includes('pro')) updCategory.pros.push(fields[property].toString())
-          else if (property.includes('con')) updCategory.cons.push(fields[property].toString())
+          else if (property.includes('pro') && !property.includes('id')) {
+            updCategory.pros.push(fields[property].toString())
+          }
+          else if (property.includes('con') && !property.includes('id'))
+            updCategory.cons.push(fields[property].toString())
       }
     })
-   
-    
-  if (category) {
-    if (updCategory.name && category.name !== updCategory.name) {
-      category.name = updCategory.name ? updCategory.name : category.name;
-     
-    } else { console.log('category.name not found ', category.name) }
 
-    if (updCategory.pros.length > 0) updCategory.pros.forEach((pro, i) => {
-      if (category.pros[i] !== pro) { category.pros[i] = pro ? pro : category.pros[i]; }
 
-    });
-    if (updCategory.cons.length > 0) updCategory.cons.forEach((con, i) => {
-      if (category.cons[i] !== con)
-        category.cons[i] = con ? con : category.cons[i];
-    });
-insertPrefs(category)
-    console.log('updated category = ', category)
-    res.status(200).json({ msg: "Category updated"/* , category */ });
-  } else {
-    res.status(400).json({ msg: `Category ${updCategory.id} not found` });
-    console.log('category id not found', updCategory.id)
-  }
+    try {
 
-});
+      async function qualify() {
+        if (updCategory.name && category.name !== updCategory.name) {
+          category.name = updCategory.name ? updCategory.name : category.name;
+
+        } else if (!updCategory.name) { console.log('Updating category ', category.name) }
+        else if (category.name === updCategory.name) { 
+          console.log('preexisting category.name', category.name) }
+
+        if (updCategory.pros.length > 0) {
+          arrayifyPrefs(category.pros, updCategory.pros)
+        };
+        if (updCategory.cons.length > 0) {
+          arrayifyPrefs(category.cons, updCategory.cons)
+        };
+      }
+      await qualify();
+      await insertPrefs(category)
+
+      res.status(200).json({ msg: "Category updated", category });
+    } catch {
+      res.status(400).json({ msg: `Category ${updCategory.id} not found` });
+      console.log('category id not found', updCategory.id)
+    }
+
+  });
 })
 
+function arrayifyPrefs(category, update) {
+  for (let i = 0; i < update.length; i++) {
+    if (i >= category.length) category.push(update[i])
+    else category[i] = update[i]
+  }
+  if (category.length > update.length) {
+    let j = category.length - update.length;
+    category.splice(update.length, j)
+  }
+}
+router.updatePrefs = arrayifyPrefs;
 //******************************************************************************** */delet one************************
 router.delete('/deleteOne/:id', (req, res) => {
   const found = members.some(member => member.id === parseInt(req.params.id));

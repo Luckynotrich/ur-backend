@@ -41,7 +41,7 @@ const processCats = (_setCats, cats) => {
 
     if (cats[i].cat_name !== cat.name) {
       _setCats.current = cat
-      delete cat
+      // delete cat
       cat = catObj(cats[i])
     }
 
