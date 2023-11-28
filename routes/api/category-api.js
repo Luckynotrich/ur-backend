@@ -111,17 +111,18 @@ router.put("/updateOne/", async (req, res) => {
   let pros = [], cons = [];
   let id = null, name;
   let updCategory = { id, name, pros, cons }
-  let category/*,  newData = [name] */
+  let category = { id, name, pros, cons }
 
   await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
     await Object.keys(fields).forEach((property) => {//async await must resolve
       if (fields[property].toString().length > 0 && fields[property].toString() !== ' ') {
-        if (property.includes('name')) updCategory.name = fields[property].toString()
+        if (property.includes('name')) /* category.name = */ updCategory.name = fields[property].toString()
         else
           if (property.includes('catId')) {
             updCategory.id = fields[property].toString()
-            if (categories.some((category) => Number(category.id) === Number(updCategory.id))) {
-              category = categories.find((category) => Number(category.id) === Number(updCategory.id))
+            if (categories.some((cat) => Number(cat.id) === Number(updCategory.id))) {
+              category.id = updCategory.id
+              category.name = categories[updCategory.id].name
             }
           }
           else if (property.includes('pro') && !property.includes('id')) {
@@ -136,33 +137,32 @@ router.put("/updateOne/", async (req, res) => {
     try {
 
       async function qualify() {
-        if (updCategory.name && category.name !== updCategory.name) {
-          category.name = updCategory.name ? updCategory.name : category.name;
-
-        } else if (!updCategory.name) { console.log('Updating category ', category.name) }
-        else if (category.name === updCategory.name) { 
-          console.log('preexisting category.name', category.name) }
+        // if (updCategory.name && category.name !== updCategory.name) {
+        //   category.name = updCategory.name ? updCategory.name : category.name;
+        // } else if (!updCategory.name) { console.log('Updating category ', category.name) }
+        // else if (category.name === updCategory.name) { 
+        //   console.log('preexisting category.name', category.name) }
 
         if (updCategory.pros.length > 0) {
-          arrayifyPrefs(category.pros, updCategory.pros)
+          await arrayifyPrefs(category.pros, updCategory.pros)
         };
         if (updCategory.cons.length > 0) {
-          arrayifyPrefs(category.cons, updCategory.cons)
+          await arrayifyPrefs(category.cons, updCategory.cons)
         };
       }
       await qualify();
       await insertPrefs(category)
 
-      res.status(200).json({ msg: "Category updated", category });
+      await res.status(200).json({ msg: `Category ${updCategory.id} not found`  });
     } catch {
-      res.status(400).json({ msg: `Category ${updCategory.id} not found` });
-      console.log('category id not found', updCategory.id)
+      res.status(400).json({ msg: `Category update failed` });
+      console.log(`Category ${updCategory.id} failed.`)
     }
 
   });
 })
 
-function arrayifyPrefs(category, update) {
+async function arrayifyPrefs(category, update) {
   for (let i = 0; i < update.length; i++) {
     if (i >= category.length) category.push(update[i])
     else category[i] = update[i]

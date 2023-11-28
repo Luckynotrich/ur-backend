@@ -50,7 +50,6 @@ const processReview = (_setReview, reviews) => {
 
 
 const createReview = (pref) => {
-    console.log('createReview = ', pref.rev_name)
 
     return this.Review = {
         name: pref.rev_name,
