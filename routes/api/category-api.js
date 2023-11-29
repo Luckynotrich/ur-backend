@@ -5,7 +5,7 @@ const multiparty = require('multiparty');
 
 
 const getAllCats = require('../db/get-all-cats-db')
-const insertPrefs = require('../db/insert-prefs-db.js')
+const {insertPrefs} = require('../db/insert-prefs-db.js')
 let db = require('../db/fs_pool.js');
 const pool = db.getPool();
 
@@ -108,21 +108,17 @@ router.put("/updateOne/", async (req, res) => {
 
   let form = new multiparty.Form();
 
-  let pros = [], cons = [];
-  let id = null, name;
-  let updCategory = { id, name, pros, cons }
-  let category = { id, name, pros, cons }
+  let pros = [], cons = [], id = null;
+  let updCategory = { id, pros, cons }
+  let category = { id, pros, cons }
 
   await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
     await Object.keys(fields).forEach((property) => {//async await must resolve
       if (fields[property].toString().length > 0 && fields[property].toString() !== ' ') {
-        if (property.includes('name')) /* category.name = */ updCategory.name = fields[property].toString()
-        else
           if (property.includes('catId')) {
             updCategory.id = fields[property].toString()
-            if (categories.some((cat) => Number(cat.id) === Number(updCategory.id))) {
+            if (categories.map((cat) => {if(Number(cat.id) === Number(updCategory.id)){return true}})) {
               category.id = updCategory.id
-              category.name = categories[updCategory.id].name
             }
           }
           else if (property.includes('pro') && !property.includes('id')) {
@@ -132,17 +128,12 @@ router.put("/updateOne/", async (req, res) => {
             updCategory.cons.push(fields[property].toString())
       }
     })
-
-
+    if (!category.id) {
+      return res.status(400).json({ msg: "Data error: id not found" });
+    }
     try {
 
       async function qualify() {
-        // if (updCategory.name && category.name !== updCategory.name) {
-        //   category.name = updCategory.name ? updCategory.name : category.name;
-        // } else if (!updCategory.name) { console.log('Updating category ', category.name) }
-        // else if (category.name === updCategory.name) { 
-        //   console.log('preexisting category.name', category.name) }
-
         if (updCategory.pros.length > 0) {
           await arrayifyPrefs(category.pros, updCategory.pros)
         };
