@@ -5,7 +5,7 @@ const multiparty = require('multiparty');
 
 
 const getAllCats = require('../db/get-all-cats-db')
-const {insertPrefs} = require('../db/insert-prefs-db.js')
+const {updatePrefs} = require('../db/prefs-db.js')
 let db = require('../db/fs_pool.js');
 const pool = db.getPool();
 
@@ -24,7 +24,6 @@ router.get("/:userId", async (req, response, next) => {
     await getAllCats(setCats, userId)
     categories = await setCats.cats
     setTimeout(() => {100})
-    // console.log('categories = ',categories)
     await response.send(categories)
   }
   catch (err) {
@@ -108,9 +107,10 @@ router.put("/updateOne/", async (req, res) => {
 
   let form = new multiparty.Form();
 
-  let pros = [], cons = [], id = null;
+   let pros = [], cons = [], id = null;
   let updCategory = { id, pros, cons }
-  let category = { id, pros, cons }
+   let category = { id}
+  
 
   await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
     await Object.keys(fields).forEach((property) => {//async await must resolve
@@ -126,25 +126,16 @@ router.put("/updateOne/", async (req, res) => {
           }
           else if (property.includes('con') && !property.includes('id'))
             updCategory.cons.push(fields[property].toString())
-      }
+       }
+      
     })
     if (!category.id) {
       return res.status(400).json({ msg: "Data error: id not found" });
     }
     try {
+      await updatePrefs(updCategory)
 
-      async function qualify() {
-        if (updCategory.pros.length > 0) {
-          await arrayifyPrefs(category.pros, updCategory.pros)
-        };
-        if (updCategory.cons.length > 0) {
-          await arrayifyPrefs(category.cons, updCategory.cons)
-        };
-      }
-      await qualify();
-      await insertPrefs(category)
-
-      await res.status(200).json({ msg: `Category ${updCategory.id} not found`  });
+      await res.status(200).json({ msg: `Category ${updCategory.id} updated`  });
     } catch {
       res.status(400).json({ msg: `Category update failed` });
       console.log(`Category ${updCategory.id} failed.`)
@@ -153,17 +144,6 @@ router.put("/updateOne/", async (req, res) => {
   });
 })
 
-async function arrayifyPrefs(category, update) {
-  for (let i = 0; i < update.length; i++) {
-    if (i >= category.length) category.push(update[i])
-    else category[i] = update[i]
-  }
-  if (category.length > update.length) {
-    let j = category.length - update.length;
-    category.splice(update.length, j)
-  }
-}
-router.updatePrefs = arrayifyPrefs;
 //******************************************************************************** */delet one************************
 router.delete('/deleteOne/:id', (req, res) => {
   const found = members.some(member => member.id === parseInt(req.params.id));
