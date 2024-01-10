@@ -64,23 +64,41 @@ router.post("/addNew/", async (req, res) => {
 
   await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
     await Object.keys(fields).forEach((property) => {//async await must resolve 
+      console.log('property = ', property)
       if (fields[property] && fields[property].toString().length > 0 &&
         fields[property].toString() !== ' ') {
 
-        if (property.includes('name')) name = fields[property].toString();
-        else if (property.includes('userId')) userId = fields[property].toString();
+        if (property.includes('name')){
+           name = fields[property].toString();
+           category.name = name;
+           console.log('name = ', name)
+          }
+        else if (property.includes('userId')) {userId = fields[property].toString(); console.log('userId = ', userId)}
       }
+      else if (property.includes('pro') && !property.includes('id')) {
+        category.pros.push(fields[property].toString());
+      }
+      else if (property.includes('con') && !property.includes('id')){
+        category.cons.push(fields[property].toString());
+      }
+
       if (property.includes('name') && userId && name.length === 0) {
         console.log('name does not exist')
         return res.status(400).json({ msg: "Name must be included" });
       }
-    }
+     
+   }
+    
     )
+    if (!userId) {
+      return res.status(400).json({ msg: "Data error: userId not found" });
+    }
     if (!name) {
       return res.status(400).json({ msg: "Data error: name not found" });
     }
-    if (categories.some((category) => category.name === name)) {
-      return res.status(200).json({ msg: "Category name current" });
+    if (categories.some((cat) => cat.name === name)) {
+      let id = categories.find((kat) => kat.name === name).id
+      return res.status(200).json(await id);
     }
     pool.connect((err, client, release) => {
       if (err) {
@@ -91,8 +109,10 @@ router.post("/addNew/", async (req, res) => {
         + ' values($1, $2)'
         + ' returning id;', [userId, name],
         async (err, result) => {
-          await res.status(200).json(id = await result.rows[0].id)
-          await setTimeout(() => { categories.push({ id, name, userId }) }, 1000)
+          category.id = await result.rows[0].id;
+          await res.status(200).json(category)
+          await updatePrefs(category)
+          await setTimeout(() => { categories.push(category) }, 1000)
           release();
           if (err) {
             return console.error('Error executing query', err.stack)

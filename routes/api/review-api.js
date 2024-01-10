@@ -22,7 +22,6 @@ router.get('/:userId', async (req, res) => {
     await getAllReviews(setReviews, userId)
     reviews = await setReviews.reviews
     setTimeout(() => 500)
-    // console.log('reviews = ', reviews)
     await res.send(reviews)
   }
 
@@ -86,23 +85,18 @@ router.post('/addNew/', async (req, res) => {
             break;
           case 'revURL':
             newReview.revURL = fields[value][0]
-            //console.log('revURL = ', newReview.revURL, 'typeof = ', typeof newReview.revURL)
             break;
           case 'revDate':
             newReview.revDate = fields[value][0]
-            //console.log('revDate = ', newReview.revDate, 'typeof = ', typeof newReview.revDate)
             break;
           case 'revRating':
             newReview.revRating = Number(fields[value][0])
-            //console.log('revRating = ', newReview.revRating, 'typeof = ', typeof newReview.revRating)
             break;
           case 'revText':
             newReview.revText = fields[value][0]
-            // console.log('reviewText = ', newReview.revText, 'typeof = ', typeof newReview.revText)
             break;
           case 'propArray':
             newReview.revPrefs.push(Number(fields[value][0]))
-            // console.log('propArray = ', newReview.revPrefs, 'typeof = ', typeof newReview.revPrefs)
             break;
           default:
             console.log('switch: no match ' + value + ' ' + fields[value][0])
