@@ -4,7 +4,7 @@ const pool = db.getPool();
 
 
 const updatePrefs = async (_category) => {
-    console.log('insertPrefs _category = ', _category)
+    console.log('updatePrefs _category = ', _category)
 
     const update = async () => {
         
@@ -23,6 +23,7 @@ const updatePrefs = async (_category) => {
             let rows = Results.rows
             oldPrefs = rows.map((row) => {
                 return {pref: row[0],procon: row[1]} })
+                
            oldPrefs.map((op) => {op.procon?op.procon='t':op.procon='f'})
 
            let oldPrefIds = rows.map((row) => {return {pref:row[0], id:row[2]}}) 
@@ -67,11 +68,15 @@ const updatePrefs = async (_category) => {
             }
             )
         release();
-        // return await values
+        //  return 200
     })
 }
-    await update();
-    await res.status(200).json({ msg: "Category updated", _category });
+// while (await !typeof(_category.id)== 'number' && await _category.id === undefined || await _category.id === null ) {
+//     await setTimeout(() => { console.log('waiting for id') }, 100)
+// }
+console.log('updatePrefs _category.id = ', _category.id)
+   let res = await update();
+    // await res.status(200).json({ msg: "Category updated", _category });
 }
 
 const filterArray = async (arr1, arr2) => {
