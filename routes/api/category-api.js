@@ -63,14 +63,13 @@ router.post("/addNew/", async (req, res) => {
   let category = { name, id, pros: [], cons: [] }
 
   await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
-    console.log('fields = ', fields)
+    // console.log('fields = ', fields)
     await Object.keys(fields).forEach((property) => {//async await must resolve 
-  
+
       if (property.includes('name')) {
         name = fields[property].toString();
         if (name && name.length > 3 || !categories.some((cat) => cat.name === name)) category.name = name;
         else return res.status(400).json({ msg: "Name not included, name may be too short or already exists" });
-        console.log('name = ', name)
       }
       else if (property.includes('userId')) {
         userId = fields[property].toString();
@@ -91,25 +90,15 @@ router.post("/addNew/", async (req, res) => {
           async (err, result) => {
             category.id = await result.rows[0].id;
             await res.status(200).json(await category);
+            await updatePrefs(category)
+            await categories.push(category)
             await release();
           })
       })
     }
-    while (!typeof(await category.id)=== 'number') {
-      console.log('Running...');
-      await new Promise(resolve => setInterval(resolve, 10));
-    }
-    if (await typeof(await category.id)=== 'number' && await category.pros || await category.cons) await updatePrefs(category)
-    /* await setTimeout(() => {  */categories.push(category)// }, 100)
-    if (err) {
-      return console.error('Error executing query', err.stack)
-    }
-
-
   });
 });
-const getProsAndCons = async (category, property,field) => {
-  console.log('field typeof = ', typeof(field))
+const getProsAndCons = async (category, property, field) => {
   if (property.includes('pros')) {
     let array = field.filter(Boolean);
     category.pros = array.map((pro) => { return pro.trim() });
@@ -125,76 +114,76 @@ const getProsAndCons = async (category, property,field) => {
     if (field[property].toString() !== '') category.cons.push(field[property].toString());
   }
 }
-  //************************************************************* */ update single member*********************************
-  router.put("/updateOne/", async (req, res) => {
+//************************************************************* */ update single member*********************************
+router.put("/updateOne/", async (req, res) => {
 
-    let form = new multiparty.Form();
+  let form = new multiparty.Form();
 
-    let pros = [], cons = [], id = null;
-    let updCategory = { id, pros, cons }
-    let category = { id }
+  let pros = [], cons = [], id = null;
+  let updCategory = { id, pros, cons }
+  let category = { id }
 
 
-    await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
-      await Object.keys(fields).forEach((property) => {//async await must resolve
-        if (fields[property].toString().length > 0 &&
-          fields[property].toString() !== ' ') {
+  await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
+    await Object.keys(fields).forEach((property) => {//async await must resolve
+      if (fields[property].toString().length > 0 &&
+        fields[property].toString() !== ' ') {
 
-          if (property.includes('catId')) {
-            updCategory.id = fields[property].toString()
-            if (categories.map((cat) => { if (Number(cat.id) === Number(updCategory.id)) { return true } })) {
-              category.id = updCategory.id
-            }
+        if (property.includes('catId')) {
+          updCategory.id = fields[property].toString()
+          if (categories.map((cat) => { if (Number(cat.id) === Number(updCategory.id)) { return true } })) {
+            category.id = updCategory.id
           }
-          else getProsAndCons(updCategory, property, fields[property])
         }
-
-      })
-      if (!category.id) {
-        return res.status(400).json({ msg: "Data error: id not found" });
-      }
-      try {
-        await updatePrefs(updCategory)
-
-        await res.status(200).json({ msg: `Category ${updCategory.id} updated` });
-      } catch {
-        res.status(400).json({ msg: `Category update failed` });
-        console.log(`Category ${updCategory.id} failed.`)
+        else getProsAndCons(updCategory, property, fields[property])
       }
 
-    });
-  })
-
-  //******************************************************************************** */delet one************************
-  router.delete('/deleteOne/:id', (req, res) => {
-    const found = members.some(member => member.id === parseInt(req.params.id));
-
-    if (found) {
-      res.json({
-        msg: 'Member deleted', members: members.filter(member =>
-          member.id !== parseInt(req.params.id))
-      });
+    })
+    if (!category.id) {
+      return res.status(400).json({ msg: "Data error: id not found" });
     }
-    else {
-      res.status(400).json({ msg: `No member with the id of ${req.params.id}` });
-    }
-  });
-
-
-  async function writeCatFile(categories) {
-    const filePath = path.resolve(__dirname, "../../data/catFile.js");
-    const fileData =
-      "const categories =" +
-      JSON.stringify(categories, null, "\t") +
-      "\n module.exports = categories";
-
     try {
-      const data = await fs.writeFile(filePath, fileData, () =>
-        console.log("writeCat", data)
-      );
-    } catch (error) {
-      console.log(error);
-    }
-  }
+      await updatePrefs(updCategory)
 
-  module.exports = router;
+      await res.status(200).json({ msg: `Category ${updCategory.id} updated` });
+    } catch {
+      res.status(400).json({ msg: `Category update failed` });
+      console.log(`Category ${updCategory.id} failed.`)
+    }
+
+  });
+})
+
+//******************************************************************************** */delet one************************
+router.delete('/deleteOne/:id', (req, res) => {
+  const found = members.some(member => member.id === parseInt(req.params.id));
+
+  if (found) {
+    res.json({
+      msg: 'Member deleted', members: members.filter(member =>
+        member.id !== parseInt(req.params.id))
+    });
+  }
+  else {
+    res.status(400).json({ msg: `No member with the id of ${req.params.id}` });
+  }
+});
+
+
+async function writeCatFile(categories) {
+  const filePath = path.resolve(__dirname, "../../data/catFile.js");
+  const fileData =
+    "const categories =" +
+    JSON.stringify(categories, null, "\t") +
+    "\n module.exports = categories";
+
+  try {
+    const data = await fs.writeFile(filePath, fileData, () =>
+      console.log("writeCat", data)
+    );
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+module.exports = router;
