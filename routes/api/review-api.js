@@ -60,12 +60,11 @@ router.post('/addNew/', async (req, res) => {
   await form.parse(req, async (err, fields) => {
     await Object.keys(fields).forEach((value) => {
       if (fields[value] && fields[value].toString().trim() !== '') {
-        if (value.includes('[') && value.includes(']')) {
-          const testValue = value.split('[')[1];
-          const testValue1 = testValue.split(']')[0];
-          value1 = testValue1;
+          if (value.includes('propArray')) {
+          value1 = "propArray";
         }
         else value1 = value;
+        console.log('value1 = ', value1,' value = ', value, 'fields[value] = ', fields[value][0])
         switch (value1) {
           case 'catId':
             newReview.catId = Number(fields[value][0])
@@ -127,7 +126,7 @@ router.post('/addNew/', async (req, res) => {
         }
         release()
         if (err) {
-          return console.error('Error executing query', err.msg)
+          return console.error('Error executing review query', err.msg)
         }
       })
 

@@ -99,13 +99,16 @@ router.post("/addNew/", async (req, res) => {
   });
 });
 const getProsAndCons = async (category, property, field) => {
+  console.log('property = ', property, ' field = ', field)
   if (property.includes('pros')) {
     let array = field.filter(Boolean);
-    category.pros = array.map((pro) => { return pro.trim() });
+    category.pros = array.map((pro) => { 
+       return pro.trim() });
   }
   else if (property.includes('cons')) {
     let array = field.filter(Boolean);
-    category.cons = array.map((con) => { return con.trim() });
+    category.cons = array.map((con) => { 
+      return con.trim() });
   }
   else if (property.includes('pro') && !property.includes('id')) {
     if (field[property].toString() !== '') category.pros.push(field[property].toString());
