@@ -4,8 +4,10 @@ const path = require('path')
 const router = express.Router()
 const multiparty = require('multiparty');
 
-const insertReview = require('../db/insert-review-db')
+const { insertChecked } = require('../db/insert-checked-db')
 const getAllReviews = require('../db/get-all-reviews-db')
+
+
 let db = require('../db/fs_pool.js');
 const pool = db.getPool();
 
@@ -52,93 +54,88 @@ router.get('/getone/:id', (req, res) => {
 
 // add new review to array
 router.post('/addNew/', async (req, res) => {
+  let revId = null, sent = false;
   let form = new multiparty.Form();
-
-  let catId, revName, revURL, revDate, revRating, revText, revPrefs = [];
+  let catId = '', revName = "", revURL = "", revDate = '', revRating = '', revText = '', revPrefs = [];
   let newReview = { catId, revName, revURL, revDate, revRating, revText, revPrefs: [] };
-
-  await form.parse(req, async (err, fields) => {
-    await Object.keys(fields).forEach((value) => {
-      if (fields[value] && fields[value].toString().trim() !== '') {
-          if (value.includes('propArray')) {
-          value1 = "propArray";
-        }
-        else value1 = value;
-        console.log('value1 = ', value1,' value = ', value, 'fields[value] = ', fields[value][0])
-        switch (value1) {
-          case 'catId':
-            newReview.catId = Number(fields[value][0])
-            //console.log('catId = ', newReview.catId, 'typeof = ', typeof newReview.catId)
-            if (!newReview.catId) {
-              console.log('catId failed = ', newReview.catId)
+  
+    await form.parse(req, async (err, fields) => {
+      console.log('fields = ', fields)
+      await Object.keys(fields).forEach(async(value) => {
+        if (fields[value] && fields[value].toString().trim() !== '') {
+          if (value.includes('catId')) {
+            catId = Number(fields[value][0])
+            if (!catId) {
+              console.log('catId failed = ', catId)
               return res.status(400).json({ msg: 'Category must be included' })
+            } else {
+              newReview.catId = catId;
             }
-            break;
-          case 'revName':
-            newReview.revName = fields[value][0]
-            //console.log('revName = ', newReview.revName, 'typeof = ', typeof newReview.revName)
-            if (!newReview.revName) {
-              console.log('revName failed = ', newReview.revName)
+          }
+          else if (value.includes('revName')) {
+            revName = fields[value][0]
+            if (!revName) {
+              console.log('revName failed = ', revName)
               return res.status(400).json({ msg: 'Name must be included' })
+            } else {
+              newReview.revName = revName;
             }
-            break;
-          case 'revURL':
+          }
+          else if (value.includes('revURL'))
             newReview.revURL = fields[value][0]
-            break;
-          case 'revDate':
+          else if (value.includes('revDate'))
             newReview.revDate = fields[value][0]
-            break;
-          case 'revRating':
+          else if (value.includes('revRating'))
             newReview.revRating = Number(fields[value][0])
-            break;
-          case 'revText':
+          else if (value.includes('revText'))
             newReview.revText = fields[value][0]
-            break;
-          case 'propArray':
-            newReview.revPrefs.push(Number(fields[value][0]))
-            break;
-          default:
-            console.log('switch: no match ' + value + ' ' + fields[value][0])
-            break;
-        }
-      } else console.log('no value for ' + value)
+          else if (value.includes('propArray')) {
+            if (fields[value][0] !== '0') {
+              fields[value].forEach((prop, i) => {
+                newReview.revPrefs.push(Number(fields[value][i]))
+              })
+            } else { newReview.revPrefs = [-1] }
+            console.log('propArray newReview.revPrefs = ', newReview.revPrefs)
+          }
+        } else console.log('no match ' + value + ' ' + fields[value][0])
+        // this conditional depends on the order of the fields in the form
+          //if no preferences or preferences are present, ensures that else tree reaches propArray
+        if (newReview.revPrefs[0] === -1 || newReview.revPrefs.length > 0) {
+          pool.connect(async (err, client, release) => {
+            if (err) {
+              return console.error('Error acquiring client', err.stack)
+            }                     //sent eliminates multiple inserts
+            if(!sent){sent = true,//client.query is inside of forEach(async(value) loop to prevent execution from jumping ahead of else tree
+              client.query('INSERT INTO review(cat_id, rev_name, rev_url, rev_date, rating, rev_text) '
+              + ' values($1, $2, $3, $4, $5, $6)'
+              + ' returning id;', [newReview.catId, newReview.revName, newReview.revURL, newReview.revDate, newReview.revRating, newReview.revText],
+              async (err, result) => {
+                if (!err) {
+                  revId = await result.rows[0].id
+                 if(newReview.revPrefs[0] > -1){ await newReview.revPrefs.map((pref, i) => {
+                    [revId, i]
+                    let id = client.query('INSERT INTO checked(rev_id,pref_id) VALUES($1,$2)'
+                      + ' returning id', [revId, pref])
+                    pref.id = id;
+                  })}
+                }
+                release()
+                if (err) {
+                  return console.error('Error executing review query', err.msg)
+                }
+              })
+          
+          newReview.id = await revId;
+          await reviews.push(newReview)
+          await res.status(200).json(newReview)
+            }
+        }, 500)
+      }
+    })
+
     })
   })
-
-  let revId
-  await pool.connect((err, client, release) => {
-    if (err) {
-      return console.error('Error acquiring client', err.stack)
-    }
-    client.query('INSERT INTO review(cat_id, rev_name, rev_url, rev_date, rating, rev_text) '
-      + ' values($1, $2, $3, $4, $5, $6)'
-      + ' returning id;', [newReview.catId, newReview.revName, newReview.revURL, newReview.revDate, newReview.revRating, newReview.revText],
-      async (err, result) => {
-        if (!err) {
-          revId = await result.rows[0].id
-          /* let values =  */
-          await newReview.revPrefs.map((pref, i) => {
-            [revId, i]
-            let id = client.query('INSERT INTO checked(rev_id,pref_id) VALUES($1,$2)'
-              + ' returning id', [revId, pref])
-            pref.id = id;
-          })
-        }
-        release()
-        if (err) {
-          return console.error('Error executing review query', err.msg)
-        }
-      })
-
-
-  })
-  newReview.id = await revId;
-  await reviews.push(newReview)
-  await res.status(200).json(newReview)
-  // insertReview(newReview)
-})
-
-// update single member
+  
 router.put('/:id', (req, res) => {
   const found = reviews.some(
     (review) => review.id === parseInt(req.params.id)
@@ -188,5 +185,13 @@ async function writeReviewFile(review) {
   try {
     const data = await fs.writeFile(filePath, fileData, () => (console.log(data)))
   } catch (error) { console.log(error) }
+}
+async function runDontWalk(Caller, count) {
+  while (true) {
+    console.log('Running...');
+    await new Promise(resolve => setInterval(resolve, count));
+    console.log(`${Caller}...sent`);
+    return;
+  }
 }
 module.exports = router
