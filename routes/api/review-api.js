@@ -163,20 +163,40 @@ router.put('/:id', (req, res) => {
   }
 })
 //delete a member
-router.delete('/:id', (req, res) => {
-  const found = reviews.some(review => review.id === parseInt(req.params.id))
-  if (found) {
-    res.json({
-      msg: 'Review deleted', reviews: reviews.filter(
-        review => review.id !== parseInt(req.params.id)
-      )
-    })
-  }
-  else {
-    res.status(400).json({ msg: `No Review with the id of ${req.params.id} was found` })
-  }
+router.delete('/delete/:id', async (req, res) => {
+  await Object.keys(fields).forEach((property) => {//async await must resolve
+    if (fields[property].toString().length > 0 &&
+      fields[property].toString() !== ' ') {
+        if(property.includes('id')){
+        res.json({
+          msg: 'Member deleted', members: members.filter(member =>
+            member.id !== parseInt(req.params.id))
+        });}
+        else {
+          res.status(400).json({ msg: `No member with the id of ${req.params.id}` });
+        }
+    }
+  })
+  
+  
+});
+// router.delete('/delete/:id', (req, res) => {
+  
+//   const found = reviews.some(review => review.id === parseInt(req.params.id))
+//   if (found) {
+//     console.log('req.params.id =',req.params.id)
 
-})
+//     res.json({
+//       msg: 'Review deleted', reviews: reviews.filter(
+//         review => review.id !== parseInt(req.params.id)
+//       )
+//     })
+//   }
+//   else {
+//     res.status(400).json({ msg: `No Review with the id of ${req.params.id} was found` })
+//   }
+
+// })
 
 async function writeReviewFile(review) {
   const filePath = path.resolve(__dirname, '../../data/revFile.js')

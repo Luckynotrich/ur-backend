@@ -99,7 +99,7 @@ router.post("/addNew/", async (req, res) => {
   });
 });
 const getProsAndCons = async (category, property, field) => {
-  console.log('property = ', property, ' field = ', field)
+  // console.log('property = ', property, ' field = ', field)
   if (property.includes('pros')) {
     let array = field.filter(Boolean);
     category.pros = array.map((pro) => { 
@@ -158,18 +158,22 @@ router.put("/updateOne/", async (req, res) => {
 })
 
 //******************************************************************************** */delet one************************
-router.delete('/deleteOne/:id', (req, res) => {
-  const found = members.some(member => member.id === parseInt(req.params.id));
-
-  if (found) {
-    res.json({
-      msg: 'Member deleted', members: members.filter(member =>
-        member.id !== parseInt(req.params.id))
-    });
-  }
-  else {
-    res.status(400).json({ msg: `No member with the id of ${req.params.id}` });
-  }
+router.delete('/delete/:id', async (req, res) => {
+  await Object.keys(fields).forEach((property) => {//async await must resolve
+    if (fields[property].toString().length > 0 &&
+      fields[property].toString() !== ' ') {
+        if(property.includes('id')){
+        res.json({
+          msg: 'Member deleted', members: members.filter(member =>
+            member.id !== parseInt(req.params.id))
+        });}
+        else {
+          res.status(400).json({ msg: `No member with the id of ${req.params.id}` });
+        }
+    }
+  })
+  
+  
 });
 
 
