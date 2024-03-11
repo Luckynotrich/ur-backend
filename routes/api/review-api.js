@@ -58,84 +58,87 @@ router.post('/addNew/', async (req, res) => {
   let form = new multiparty.Form();
   let catId = '', revName = "", revURL = "", revDate = '', revRating = '', revText = '', revPrefs = [];
   let newReview = { catId, revName, revURL, revDate, revRating, revText, revPrefs: [] };
-  
-    await form.parse(req, async (err, fields) => {
-      console.log('fields = ', fields)
-      await Object.keys(fields).forEach(async(value) => {
-        if (fields[value] && fields[value].toString().trim() !== '') {
-          if (value.includes('catId')) {
-            catId = Number(fields[value][0])
-            if (!catId) {
-              console.log('catId failed = ', catId)
-              return res.status(400).json({ msg: 'Category must be included' })
-            } else {
-              newReview.catId = catId;
-            }
+
+  await form.parse(req, async (err, fields) => {
+    console.log('fields = ', fields)
+    await Object.keys(fields).forEach(async (value) => {
+      if (fields[value] && fields[value].toString().trim() !== '') {
+        if (value.includes('catId')) {
+          catId = Number(fields[value][0])
+          if (!catId) {
+            console.log('catId failed = ', catId)
+            return res.status(400).json({ msg: 'Category must be included' })
+          } else {
+            newReview.catId = catId;
           }
-          else if (value.includes('revName')) {
-            revName = fields[value][0]
-            if (!revName) {
-              console.log('revName failed = ', revName)
-              return res.status(400).json({ msg: 'Name must be included' })
-            } else {
-              newReview.revName = revName;
-            }
+        }
+        else if (value.includes('revName')) {
+          revName = fields[value][0]
+          if (!revName) {
+            console.log('revName failed = ', revName)
+            return res.status(400).json({ msg: 'Name must be included' })
+          } else {
+            newReview.revName = revName;
           }
-          else if (value.includes('revURL'))
-            newReview.revURL = fields[value][0]
-          else if (value.includes('revDate'))
-            newReview.revDate = fields[value][0]
-          else if (value.includes('revRating'))
-            newReview.revRating = Number(fields[value][0])
-          else if (value.includes('revText'))
-            newReview.revText = fields[value][0]
-          else if (value.includes('propArray')) {
-            if (fields[value][0] !== '0') {
-              fields[value].forEach((prop, i) => {
-                newReview.revPrefs.push(Number(fields[value][i]))
-              })
-            } else { newReview.revPrefs = [-1] }
-            console.log('propArray newReview.revPrefs = ', newReview.revPrefs)
-          }
-        } else console.log('no match ' + value + ' ' + fields[value][0])
-        // this conditional depends on the order of the fields in the form
-          //if no preferences or preferences are present, ensures that else tree reaches propArray
-        if (newReview.revPrefs[0] === -1 || newReview.revPrefs.length > 0) {
-          pool.connect(async (err, client, release) => {
-            if (err) {
-              return console.error('Error acquiring client', err.stack)
-            }                     //sent eliminates multiple inserts
-            if(!sent){sent = true,//client.query is inside of forEach(async(value) loop to prevent execution from jumping ahead of else tree
-              client.query('INSERT INTO review(cat_id, rev_name, rev_url, rev_date, rating, rev_text) '
+        }
+        else if (value.includes('revURL'))
+          newReview.revURL = fields[value][0]
+        else if (value.includes('revDate'))
+          newReview.revDate = fields[value][0]
+        else if (value.includes('revRating'))
+          newReview.revRating = Number(fields[value][0])
+        else if (value.includes('revText'))
+          newReview.revText = fields[value][0]
+        else if (value.includes('propArray')) {
+          if (fields[value][0] !== '0') {
+            fields[value].forEach((prop, i) => {
+              newReview.revPrefs.push(Number(fields[value][i]))
+            })
+          } else { newReview.revPrefs = [-1] }
+          console.log('propArray newReview.revPrefs = ', newReview.revPrefs)
+        }
+      } else console.log('no match ' + value + ' ' + fields[value][0])
+      // this conditional depends on the order of the fields in the form
+      //if no preferences or preferences are present, ensures that else tree reaches propArray
+      if (newReview.revPrefs[0] === -1 || newReview.revPrefs.length > 0) {
+        pool.connect(async (err, client, release) => {
+          if (err) {
+            return console.error('Error acquiring client', err.stack)
+          }                     //sent eliminates multiple inserts
+          if (!sent) {
+            sent = true,//client.query is inside of forEach(async(value) loop to prevent execution from jumping ahead of else tree
+            client.query('INSERT INTO review(cat_id, rev_name, rev_url, rev_date, rating, rev_text) '
               + ' values($1, $2, $3, $4, $5, $6)'
               + ' returning id;', [newReview.catId, newReview.revName, newReview.revURL, newReview.revDate, newReview.revRating, newReview.revText],
               async (err, result) => {
                 if (!err) {
                   revId = await result.rows[0].id
-                 if(newReview.revPrefs[0] > -1){ await newReview.revPrefs.map((pref, i) => {
-                    [revId, i]
-                    let id = client.query('INSERT INTO checked(rev_id,pref_id) VALUES($1,$2)'
-                      + ' returning id', [revId, pref])
-                    pref.id = id;
-                  })}
+                  if (newReview.revPrefs[0] > -1) {
+                    await newReview.revPrefs.map((pref, i) => {
+                      [revId, i]
+                      let id = client.query('INSERT INTO checked(rev_id,pref_id) VALUES($1,$2)'
+                        + ' returning id', [revId, pref])
+                      pref.id = id;
+                    })
+                  }
                 }
                 release()
                 if (err) {
                   return console.error('Error executing review query', err.msg)
                 }
               })
-          
-          newReview.id = await revId;
-          await reviews.push(newReview)
-          await res.status(200).json(newReview)
-            }
+
+            newReview.id = await revId;
+            await reviews.push(newReview)
+            await res.status(200).json(newReview)
+          }
         }, 500)
       }
     })
 
-    })
   })
-  
+})
+
 router.put('/:id', (req, res) => {
   const found = reviews.some(
     (review) => review.id === parseInt(req.params.id)
@@ -162,41 +165,49 @@ router.put('/:id', (req, res) => {
     res.status(400).json({ msg: `Review ${req.params.id} not found` })
   }
 })
-//delete a member
-router.delete('/delete/:id', async (req, res) => {
-  await Object.keys(fields).forEach((property) => {//async await must resolve
-    if (fields[property].toString().length > 0 &&
-      fields[property].toString() !== ' ') {
-        if(property.includes('id')){
+//This delete route requires checked foreign key for rev_id to 
+// be set to delete on cascade
+router.delete('/delete/:id', (req, res) => {
+
+  const found = reviews.some(review => review.id === parseInt(req.params.id))
+  if (found) {
+    const id = parseInt(req.params.id)
+    console.log('id =', id)
+    pool.connect((err, client, release) => {
+      if (err) { return console.error('Error acquiring client', err.stack) }
+      if (id) {
+        client.query('DELETE FROM review as review WHERE review.id = $1', [id])
         res.json({
-          msg: 'Member deleted', members: members.filter(member =>
-            member.id !== parseInt(req.params.id))
-        });}
-        else {
-          res.status(400).json({ msg: `No member with the id of ${req.params.id}` });
-        }
-    }
-  })
-  
-  
-});
-// router.delete('/delete/:id', (req, res) => {
-  
-//   const found = reviews.some(review => review.id === parseInt(req.params.id))
-//   if (found) {
-//     console.log('req.params.id =',req.params.id)
+          msg: 'Review deleted', reviews: reviews.filter(
+            review => review.id !== parseInt(req.params.id)
+          )
+        })
+        release();
+      }
+      else {
+        res.status(400).json({ msg: `No Review with the id of ${req.params.id} was found` })
+      }
+    })
+  }
+})
+//delete a member
+// router.delete('/delete/:id', async (req, res) => {
+//   await Object.keys(fields).forEach((property) => {//async await must resolve
+//     if (fields[property].toString().length > 0 &&
+//       fields[property].toString() !== ' ') {
+//         if(property.includes('id')){
+//         res.json({
+//           msg: 'Member deleted', members: members.filter(member =>
+//             member.id !== parseInt(req.params.id))
+//         });}
+//         else {
+//           res.status(400).json({ msg: `No member with the id of ${req.params.id}` });
+//         }
+//     }
+//   })
 
-//     res.json({
-//       msg: 'Review deleted', reviews: reviews.filter(
-//         review => review.id !== parseInt(req.params.id)
-//       )
-//     })
-//   }
-//   else {
-//     res.status(400).json({ msg: `No Review with the id of ${req.params.id} was found` })
-//   }
 
-// })
+// });
 
 async function writeReviewFile(review) {
   const filePath = path.resolve(__dirname, '../../data/revFile.js')

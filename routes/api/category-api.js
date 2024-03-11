@@ -158,23 +158,50 @@ router.put("/updateOne/", async (req, res) => {
 })
 
 //******************************************************************************** */delet one************************
-router.delete('/delete/:id', async (req, res) => {
-  await Object.keys(fields).forEach((property) => {//async await must resolve
-    if (fields[property].toString().length > 0 &&
-      fields[property].toString() !== ' ') {
-        if(property.includes('id')){
+//This delete route requires preference table foreign key for cat_id to 
+// be set to delete on cascade
+router.delete('/delete/:id', (req, res) => {
+
+  const found = categories.some(cat => cat.id === parseInt(req.params.id))
+  if (found) {
+    const id = parseInt(req.params.id)
+    console.log('id =', id)
+    pool.connect((err, client, release) => {
+      if (err) { return console.error('Error acquiring client', err.stack) }
+      if (id) {
+        client.query('DELETE FROM review as review WHERE review.id = $1', [id])
         res.json({
-          msg: 'Member deleted', members: members.filter(member =>
-            member.id !== parseInt(req.params.id))
-        });}
-        else {
-          res.status(400).json({ msg: `No member with the id of ${req.params.id}` });
-        }
-    }
-  })
+          msg: 'Review deleted', reviews: reviews.filter(
+            review => review.id !== parseInt(req.params.id)
+          )
+        })
+        release();
+      }
+      else {
+        res.status(400).json({ msg: `No Review with the id of ${req.params.id} was found` })
+      }
+    })
+  }
+})
+
+
+// router.delete('/delete/:id', async (req, res) => {
+//   await Object.keys(fields).forEach((property) => {//async await must resolve
+//     if (fields[property].toString().length > 0 &&
+//       fields[property].toString() !== ' ') {
+//         if(property.includes('id')){
+//         res.json({
+//           msg: 'Member deleted', members: members.filter(member =>
+//             member.id !== parseInt(req.params.id))
+//         });}
+//         else {
+//           res.status(400).json({ msg: `No member with the id of ${req.params.id}` });
+//         }
+//     }
+//   })
   
   
-});
+// });
 
 
 async function writeCatFile(categories) {
