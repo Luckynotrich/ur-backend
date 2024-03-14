@@ -169,16 +169,16 @@ router.delete('/delete/:id', (req, res) => {
     pool.connect((err, client, release) => {
       if (err) { return console.error('Error acquiring client', err.stack) }
       if (id) {
-        client.query('DELETE FROM review as review WHERE review.id = $1', [id])
+        client.query('DELETE FROM category as category WHERE category.id = $1', [id])
         res.json({
-          msg: 'Review deleted', reviews: reviews.filter(
-            review => review.id !== parseInt(req.params.id)
+          msg: 'Category deleted', categories: categories.filter(
+            category => category.id !== parseInt(req.params.id)
           )
         })
         release();
       }
       else {
-        res.status(400).json({ msg: `No Review with the id of ${req.params.id} was found` })
+        res.status(400).json({ msg: `No Category with the id of ${req.params.id} was found` })
       }
     })
   }

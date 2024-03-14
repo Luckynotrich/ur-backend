@@ -43,8 +43,9 @@ const processReview = (_setReview, reviews) => {
             review = createReview(reviews[i])
         }
         let pref = { value: reviews[i].procon, id: reviews[i].pref_id }
-        reviews[i].procon ? review.pros.push(pref) : review.cons.push(pref)
+        if(pref.value != null){reviews[i].procon ? review.pros.push(pref) : review.cons.push(pref)}
     }
+    
     _setReview.current = review
 }
 
