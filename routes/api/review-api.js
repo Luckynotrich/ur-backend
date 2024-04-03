@@ -165,8 +165,8 @@ router.put('/:id', (req, res) => {
     res.status(400).json({ msg: `Review ${req.params.id} not found` })
   }
 })
-//This delete route requires checked foreign key for rev_id to 
 // be set to delete on cascade
+//This delete route requires checked foreign key for rev_id to 
 router.delete('/delete/:id', (req, res) => {
 
   const found = reviews.some(review => review.id === parseInt(req.params.id))

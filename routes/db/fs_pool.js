@@ -9,7 +9,6 @@ const config = {
     max: 10,
     idleTimeoutMillis: 30000,
 };
-//module.exports = {pool};
 module.exports = {
     getPool: function () {
       if (pool) return pool; // if it is already there, grab it here
