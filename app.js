@@ -10,6 +10,9 @@ const apndFile = require('../utils/apnd-file.js');
 
 require('dotenv').config({debug: true});
 
+const db = require('./routes/db/fs_pool.js');
+const pool = db.getPool()
+
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
 const passport = require("passport");
@@ -42,7 +45,7 @@ app.use(session({
       tableName: 'session__user'
       // Insert connect-pg-simple options here
   }),
-  secret: process.env.DATABASE_SECRET,
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
@@ -73,7 +76,7 @@ app.get('/signup', checkAuthenticated, (req, res) => {
   res.render("signup")
 });
 
-app.get('/', (req,res) => {
+app.get('/',checkNotAuthenticateded, (req,res) => {
   res.sendFile(path.join(__dirname, '../','upon-review','build','index.html'))
 });
 // push app after successful login
@@ -81,9 +84,9 @@ app.get('/users/dashboard', checkNotAuthenticateded, (req, res) => {
   res.render("pages/dashboard", { user: req.user.name })//(path.join(__dirname,'./build/index.html'))
 })
 // called from app
-app.post('/users/logout', function(req, res, next){
+app.post('/users/logout', (req, res, next)=>{
   console.log('req.sid =', req.sid);
-  req.logout(function(err) {
+  req.logout((err) => {
     if (err) { return next(err); }
   });//a function that comes with passport
   req.flash('success_msg1', "You have logged out.")
@@ -117,7 +120,7 @@ app.post('/users/signup', async (req, res) => {
       let hashedPassword = await bcrypt.hash(password, 10);
       pool.connect(async (err, client, release) => {
           if (err) return console.error('Error acquiring client', err.stack);
-          client.query(`SELECT * FROM users WHERE email = $1`, [email],
+          client.query(`SELECT * FROM user WHERE email = $1`, [email],
               (err, results) => {
                   if (err) {
                       throw err;
@@ -128,7 +131,7 @@ app.post('/users/signup', async (req, res) => {
                       res.render('signup', { errors })
                   }
                   else {
-                      client.query(`INSERT INTO users (name, email, password)
+                      client.query(`INSERT INTO user (name, email, password)
                    VALUES($1,$2,$3)
                       RETURNING id,password`, [name, email, hashedPassword], (err, result) => {
                           if (err) {
@@ -144,13 +147,12 @@ app.post('/users/signup', async (req, res) => {
           release();
           if (err) return console.error('Error executing user query', err.msg)
       })
-
-
   }
 })
+
 app.post("/users/login",
   passport.authenticate('local', {
-      successRedirect: "/users/dashboard",
+      successRedirect: "/",
       failureRedirect: "/login",
       failureFlash: true
   }))
@@ -160,6 +162,14 @@ function checkAuthenticated(req, res, next) {
   }
   next();
 }
+
+function checkNotAuthenticateded(req, res, next) {
+  if (req.isAuthenticated()) {
+      return next()
+  }
+  res.redirect('/login')
+}
+
 const PORT = process.env.PORT || 8081
 // start the server
 /* https.createServer({

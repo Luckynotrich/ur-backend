@@ -30,9 +30,9 @@
     "open": "^8.4.0"
   },
   "scripts": {
-    "srv": "node server_http.js",
+    "srv": "node app.js",
     "safe": "node server_https.js",
-    "watch": "clear && nodemon server_http.js",
+    "watch": "clear && nodemon app.js",
     "check-env": "node -e 'console.log(process.env)' | grep npm",
     "test": "jest"
   },
