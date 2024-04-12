@@ -2,32 +2,37 @@
 // const open = require('open')
 // const https = require('https')
 const fs = require('fs');
+const apndFile = require('../utils/apnd-file.js');
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const date = require('date-and-time');
-const apndFile = require('../utils/apnd-file.js');
-
+const logger = require('./middleware/logger.js');
 require('dotenv').config({debug: true});
+const app = express();
 
 const db = require('./routes/db/fs_pool.js');
 const pool = db.getPool()
+                          
+const expressSession = require('express-session');
+const pgSession = require('connect-pg-simple')(expressSession);
 
-const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
+const initialize = require('./user-sessions/passport-config.js');
 const passport = require("passport");
+initialize(passport);
+
 const flash = require('express-flash');
 const bcrypt = require('bcrypt');
 
-const logger = require('./middleware/logger.js');
 
-const app = express();
 app.use(cors());
 app.use('/favicon.ico', express.static('./favicon.ico'));
 app.use(logger);
 app.use(express.json());
+
 app.use(express.urlencoded({ extended: false }));
 app.use(flash());
+
 app.set("views", path.join(__dirname, "views"));
 app.set('view engine', "ejs");
 
@@ -39,10 +44,10 @@ let reqPath = `\n${idData} path: ${req.path} \n`;
   errorPath = req.path;
   next() // calling next middleware function or handler
 })
-app.use(session({
+app.use(expressSession({
   store: new pgSession({
       pool: pool,
-      tableName: 'session__user'
+      tableName: 'session'
       // Insert connect-pg-simple options here
   }),
   secret: process.env.SECRET,
@@ -76,17 +81,17 @@ app.get('/signup', checkAuthenticated, (req, res) => {
   res.render("signup")
 });
 
-app.get('/',checkNotAuthenticateded, (req,res) => {
+app.get('/users/app',checkAuthenticated, (req,res) => {
   res.sendFile(path.join(__dirname, '../','upon-review','build','index.html'))
 });
 // push app after successful login
-app.get('/users/dashboard', checkNotAuthenticateded, (req, res) => {
+app.get('/users/dashboard', checkNotAuthenticated, (req, res) => {
   res.render("pages/dashboard", { user: req.user.name })//(path.join(__dirname,'./build/index.html'))
 })
 // called from app
 app.post('/users/logout', (req, res, next)=>{
-  console.log('req.sid =', req.sid);
-  req.logout((err) => {
+
+  req.logout(function(err){
     if (err) { return next(err); }
   });//a function that comes with passport
   req.flash('success_msg1', "You have logged out.")
@@ -96,22 +101,17 @@ app.post('/users/logout', (req, res, next)=>{
 
 app.post('/users/signup', async (req, res) => {
   let { name, email, password, password2 } = req.body;
-
   let errors = [];
 
   if (!name || !email || !password || !password2) {
       errors.push({ message: "Please enter all fields" });
   }
-
   if (password.length < 6) {
       errors.push({ message: "Password must be a least 6 characters long" });
   }
-
-
   if (password !== password2) {
       errors.push({ message: "Passwords do not match." })
   }
-
   if (errors.length > 0) {
 
       res.render('signup', { errors })
@@ -131,7 +131,7 @@ app.post('/users/signup', async (req, res) => {
                       res.render('signup', { errors })
                   }
                   else {
-                      client.query(`INSERT INTO user (name, email, password)
+                      client.query(`INSERT INTO user (user_name, email, password)
                    VALUES($1,$2,$3)
                       RETURNING id,password`, [name, email, hashedPassword], (err, result) => {
                           if (err) {
@@ -152,18 +152,19 @@ app.post('/users/signup', async (req, res) => {
 
 app.post("/users/login",
   passport.authenticate('local', {
-      successRedirect: "/",
+      successRedirect: "/users/app",
       failureRedirect: "/login",
       failureFlash: true
   }))
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
-      return res.redirect('/users/dashboard')
+      return res.redirect('/users/app')
   }
+  
   next();
 }
 
-function checkNotAuthenticateded(req, res, next) {
+function checkNotAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
       return next()
   }

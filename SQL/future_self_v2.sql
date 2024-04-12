@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS public.user(
 	email VARCHAR(200) UNIQUE NOT NULL,
 	password VARCHAR(200) NOT NULL
 );
+
+
 create table IF NOT EXISTS public.category(
     id Serial not null unique,
     userID uuid not null,
@@ -40,3 +42,15 @@ CREATE TABLE IF NOT EXISTS public.checked(
     foreign key(rev_id) references public.review(id),
     foreign key(pref_id) references public.preference
 );
+
+
+CREATE TABLE "session" (
+  "sid" varchar NOT NULL COLLATE "default",
+  "sess" json NOT NULL,
+  "expire" timestamp(6) NOT NULL
+)
+WITH (OIDS=FALSE);
+
+ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
+
+CREATE INDEX "IDX_session_expire" ON "session" ("expire");

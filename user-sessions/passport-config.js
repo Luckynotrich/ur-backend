@@ -1,6 +1,6 @@
 const localStrategy = require("passport-local").Strategy;
-const fs = require('./db/fs_pool.js');
-const pool = fs.getPool();
+const db = require('../routes/db/fs_pool.js');
+const pool = db.getPool();
 const bcrypt = require("bcrypt");
 
 function initialize(passport) {
@@ -9,7 +9,7 @@ function initialize(passport) {
         console.log('authenticate');
         pool.connect(async (err, client, release) => {
             if (err) return console.error('Error acquiring client', err.stack);
-            client.query(`SELECT * FROM users WHERE email = $1`,[email],
+            client.query(`SELECT * FROM user WHERE email = $1`,[email],
                 (err, results) => {
                     if (err) throw err;
                     
@@ -43,7 +43,7 @@ function initialize(passport) {
         pool.connect(async (err, client, release) => {
             if (err) return console.error('Error acquiring client', err.stack);
             client.query(
-                `SELECT * FROM  users  WHERE id = $1`, [id], (err, results) => {
+                `SELECT * FROM  user  WHERE id = $1`, [id], (err, results) => {
                     if (err) throw err
                     return done(null, results.rows[0])
                 });
