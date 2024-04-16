@@ -30,6 +30,7 @@
     "open": "^10.1.0"
   },
   "scripts": {
+    "start": "node app.js",
     "srv": "node app.js",
     "safe": "node server_https.js",
     "watch": "clear && nodemon app.js",

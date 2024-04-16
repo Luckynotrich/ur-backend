@@ -46,14 +46,14 @@ SET default_table_access_method = heap;
 -- Name: session__user; Type: TABLE; Schema: public; Owner: lucky
 --
 
-CREATE TABLE public.session__user (
+CREATE TABLE public.session (
     sid character varying NOT NULL,
     sess json NOT NULL,
     expire timestamp(6) without time zone NOT NULL
 );
 
 
-ALTER TABLE public.session__user OWNER TO lucky;
+ALTER TABLE public.session OWNER TO lucky;
 
 --
 -- Data for Name: session__user; Type: TABLE DATA; Schema: public; Owner: lucky
@@ -78,7 +78,7 @@ ALTER TABLE ONLY public.session__user
 -- Name: IDX_session_expire; Type: INDEX; Schema: public; Owner: lucky
 --
 
-CREATE INDEX "IDX_session_expire" ON public.session__user USING btree (expire);
+CREATE INDEX "IDX_session_expire" ON public.session USING btree (expire);
 
 
 --

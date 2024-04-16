@@ -9,7 +9,7 @@ function initialize(passport) {
         console.log('authenticate');
         pool.connect(async (err, client, release) => {
             if (err) return console.error('Error acquiring client', err.stack);
-            client.query(`SELECT * FROM user WHERE email = $1`,[email],
+            client.query(`SELECT * FROM users WHERE email = $1`,[email],
                 (err, results) => {
                     if (err) throw err;
                     
@@ -36,14 +36,16 @@ function initialize(passport) {
         authenticateUser
     )
     );
-    passport.serializeUser((user, done) => done(null, user.id));
+    passport.serializeUser((user, done) => {
+        console.log('serialize user.id =',user.id);
+        done(null, user.id)});
     
     passport.deserializeUser((id, done) => {
         console.log('deserialize');
         pool.connect(async (err, client, release) => {
             if (err) return console.error('Error acquiring client', err.stack);
             client.query(
-                `SELECT * FROM  user  WHERE id = $1`, [id], (err, results) => {
+                `SELECT * FROM  users  WHERE id = $1`, [id], (err, results) => {
                     if (err) throw err
                     return done(null, results.rows[0])
                 });
