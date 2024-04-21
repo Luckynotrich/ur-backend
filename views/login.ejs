@@ -19,7 +19,7 @@
      <%}else {%><li>&nbsp&nbsp&nbsp&nbsp&nbsp</li> <% } %>
      </ul>
     </div>
-    <form action="/users/login" method="post">
+    <form action="/users/login" method="post" target="_blank">
       <div style="margin-left:2rem;">
         <label for="email">Email:</label>
         <input type="email" id="email" name="email"  required>
@@ -29,7 +29,7 @@
         <input type="password" id="password" name="password"  required>
       </div>
       <div style="margin-left: 2rem;">
-        <input type="submit" value="Login" >
+        <input type="submit" value="Login" onclick="setTimeout(window.history.back(1),10000)" >
       </div>
     </form>
     <div style="margin-left: 2rem;">
@@ -38,5 +38,8 @@
   <%- include('./partials/home_footer'); %>
 </footer>
 </div>
+<script>
+
+</script>
   </body>
   </html>

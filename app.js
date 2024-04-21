@@ -54,7 +54,7 @@ app.use(expressSession({
   secret: process.env.SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
+  cookie: { maxAge: /* 30 * 24 *  */5 * 60 * 1000 }
   // Insert connect-pg-simple options here
 }))
 
@@ -62,11 +62,10 @@ app.use(passport.initialize());
 app.use(passport.session())
 
 // Category api routes
-app.use(express.static(path.join(__dirname, './','dist')));
+
 app.use('/api/category-api', require('./routes/api/category-api.js'));
 app.use('/api/preference-api', require('./routes/api/preference-api.js'));
 app.use('/api/review-api', require('./routes/api/review-api.js'));
-// app.use('/dist/assets/',express.static(path.join(__dirname,'./','dist','assets')))
 
 
 app.get('/', (req, res) => {
@@ -82,9 +81,10 @@ app.get('/signup', checkAuthenticated, (req, res) => {
   res.render("signup")
 });
 
-app.get('/index.html', checkNotAuthenticated, (req, res) => {
-  
+app.get('/future-self', checkNotAuthenticated, (req, res) => {
+  console.log('app')
   res.sendFile(path.join(__dirname, './dist/index.html'))
+  app.use(express.static(path.join(__dirname, './','dist/')));
 });
 // push app after successful login
 app.get('/users/dashboard', checkNotAuthenticated, (req, res) => {
@@ -101,9 +101,6 @@ function logout(req,res){
    res.clearCookie('connect.sid');
   req.logout(function (err) {
     if (err) { return next(err); }
-    // req.session.destroy(function (err) { // destroys the session
-    //   res.send()
-    // })
   });//a function that comes with passport
   req.flash('logged_status', 'false')
 }
@@ -160,13 +157,13 @@ app.post('/users/signup', async (req, res) => {
 
 app.post("/users/login",
   passport.authenticate('local', {
-    successRedirect: "/index.html",
+    successRedirect: "/future-self",
     failureRedirect: "/login",
     failureFlash: true
   }))
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
-    return res.redirect('/index.html')
+    return res.redirect('/future-self')
   }
 
   next();

@@ -170,6 +170,7 @@ router.put('/:id', (req, res) => {
 router.delete('/delete/:id', (req, res) => {
 
   const found = reviews.some(review => review.id === parseInt(req.params.id))
+  console.log('req.params.id =', req.params.id)
   if (found) {
     const id = parseInt(req.params.id)
     console.log('id =', id)
