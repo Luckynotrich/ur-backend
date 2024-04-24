@@ -1,0 +1,166 @@
+:root {
+  color-scheme: dark light;
+}
+
+@media screen and (prefers-color-scheme:dark) {
+  *,
+  html,
+  body,
+  .container {
+    color: azure;
+    background-color: hsl(120, 45%, 9%);
+  }
+
+  input type[text] {
+    background-color: hsl(120, 45%, 19%);
+  }
+}
+
+@media screen and (prefers-color-scheme:light) {
+  *,
+  html,
+  body,
+  .container {
+    color: hsl(120, 45%, 9%);
+    background-color: azure;
+  }
+
+  input type[text] {
+    background-color: hsl(120, 45%, 19%);
+  }
+}
+html{
+  height:100%;
+  max-width: 1000px;
+}
+body {
+  padding-top: 50px;
+  margin-left: auto;
+  font-family: Poppins;
+  width: 50%;
+}
+
+div {
+  padding-top: 6px;
+  margin-left: 1rem;
+}
+
+input {
+  height: 2.2rem;
+  border-radius: 5px;
+}
+
+input[type="submit"] {
+  height: 2.2rem;
+  padding: 0px, 0px, 6px, 0px;
+}
+
+ul {
+  display: inherit;
+  list-style-type: none;
+  flex-direction: row;
+}
+
+li {
+  padding: 0rem 1rem 0rem 1rem;
+}
+
+nav {
+  display: flex;
+}
+form{
+  max-width:25rem;
+  width:110%;
+}
+@media screen and (max-width: 940px){
+  body{
+    max-width: 900px;
+    width: 85%;
+    margin-left: 30%;
+  }
+  h1{
+    font-size: 30px; 
+ }
+ p,a,lable{
+   font-size: 17px;
+ }
+}
+@media screen and (max-width: 768px){
+  body{
+    max-width: 740px;
+    width: 85%;
+    margin-left: 20%;
+  }
+  h1{
+    font-size: 28px; 
+ }
+ p,a,lable{
+   font-size: 16px;
+ }
+}
+@media screen and (max-width: 640px){
+  body{
+    max-width: 620px;
+    width: 85%;
+    margin-left: 15%;
+  }
+  h1{
+    font-size: 24px; 
+ }
+ p,a,lable{
+   font-size: 14px;
+ }
+}
+@media screen and (max-width: 520px){
+  body{
+    max-width: 480px;
+    width: 85%;
+    margin-left: 5%;
+  }
+  h1{
+    font-size: 22px; 
+ }
+ p,a,lable{
+   font-size: 13px;
+ }
+}
+@media screen and (max-width: 450px){
+  body{
+    max-width: 410px;
+    width: 75%;
+    margin-left: 5%;
+  }
+  h1{
+    font-size: 20px; 
+ }
+ p,a,lable{
+   font-size: 12px;
+ }
+}
+@media screen and (max-width: 420px){
+  html{
+    max-width: 400px;
+    width: 75%;
+    margin-left: 10%;
+  }
+  h1{
+    font-size: 20px; 
+ }
+ p,a,lable{
+   font-size: 12px;
+ }
+}
+@media screen and (max-width: 380px){
+  body{
+    max-width: 375px;
+    width: 70%;
+    margin-left:40%;
+  }
+  h1{
+     font-size: 18px; 
+  }
+  p,a,lable{
+    font-size: 11px;
+  }
+}
+

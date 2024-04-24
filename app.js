@@ -62,13 +62,13 @@ app.use(passport.initialize());
 app.use(passport.session())
 
 // Category api routes
-
+app.use(express.static(path.join(__dirname, './','dist/','assets/')));
 app.use('/api/category-api', require('./routes/api/category-api.js'));
 app.use('/api/preference-api', require('./routes/api/preference-api.js'));
 app.use('/api/review-api', require('./routes/api/review-api.js'));
 
-
 app.get('/', (req, res) => {
+
   logout(req,res);
   res.render("pages/index")
 });
@@ -96,7 +96,11 @@ app.post('/users/logout', (req, res, next) => {
   req.flash('success_msg1', "You have logged out.")
   res.redirect('/')
 })
-
+app.delete('/users/logout', (req, res, next) => {
+  logout(req,res);
+  req.flash('success_msg1', "You have logged out.")
+  res.redirect('/')
+})
 function logout(req,res){
    res.clearCookie('connect.sid');
   req.logout(function (err) {
