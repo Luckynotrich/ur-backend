@@ -9,7 +9,6 @@ const cors = require('cors');
 const date = require('date-and-time');
 const logger = require('./middleware/logger.js');
 require('dotenv').config({ debug: true });
-
 const app = express();
 
 const db = require('./routes/db/fs_pool.js');
@@ -60,55 +59,46 @@ app.use(expressSession({
 }))
 
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.session())
 
 // Category api routes
-// app.use(checkAuthenticated,express.static(path.join(__dirname,'./','dist')))
-app.use(express.static(path.join(__dirname, './', 'dist/', 'assets/')));
+app.use(express.static(path.join(__dirname, './','dist/','assets/')));
 app.use('/api/category-api', require('./routes/api/category-api.js'));
 app.use('/api/preference-api', require('./routes/api/preference-api.js'));
 app.use('/api/review-api', require('./routes/api/review-api.js'));
-// app.use('/api/user-api', require ('./routes/api/user-api.js'));
 
 app.get('/', (req, res) => {
-  logout(req, res);
+
+  logout(req,res);
   res.render("pages/index")
 });
 
 app.get('/login', checkAuthenticated, (req, res) => {
-  res.render('login')
-})
-
-app.get('/future-self', checkNotAuthenticated, (req, res) => {
-  console.log('login')
-  res.sendFile(path.join(__dirname, './dist/index.html'))
-  app.use(express.static(path.join(__dirname, './', 'dist/')))
+  res.render("login")
 })
 
 app.get('/signup', checkAuthenticated, (req, res) => {
   res.render("signup")
 });
 // ************************************* future-self ******* future-self *******
-/* app.get('/future-self/' */
-app.get("/getId", async (req, res) => {
-console.log('getId');
-  if (req.isAuthenticated()) {
-    
-    let id = req.user.id;
-    console.log('/getId id =', id)
-    res.status(200).json(await id);
-  }
-
+app.get('/future-self', checkNotAuthenticated, (req, res) => {
+  console.log('app')
+  res.sendFile(path.join(__dirname, './dist/index.html'))
+  app.use(express.static(path.join(__dirname, './','dist/')));
 });
-
 // called from app ************** post logout ******* post logout ******* post logout *******
 app.post('/users/logout', (req, res, next) => {
-  logout(req, res);
+  logout(req,res);
   req.flash('success_msg1', "You have logged out.")
   res.redirect('/')
 })
-function logout(req, res) {
-  res.clearCookie('connect.sid');
+app.delete('/users/logout', (req, res, next) => {
+  logout(req,res);
+  req.flash('success_msg1', "You have logged out.")
+  res.redirect('/')
+})
+function logout(req,res){
+   res.clearCookie('connect.sid');
   req.logout(function (err) {
     if (err) { return next(err); }
   });//a function that comes with passport
@@ -128,7 +118,7 @@ app.post('/users/signup', async (req, res) => {
   if (password !== password2) {
     errors.push({ message: "Passwords do not match." })
   }
-  if (errors.length > 0) { res.render('signup', { errors }) }
+  if (errors.length > 0) { res.render('signup', { errors })}
   else {
     let hashedPassword = await bcrypt.hash(password, 10);
     pool.connect(async (err, client, release) => {
@@ -152,7 +142,7 @@ app.post('/users/signup', async (req, res) => {
               // console.log('results =', results.rows);
               req.flash('success_msg1', `You are now registered.`);
               req.flash('success_msg2', 'Please log in')
-              res.redirect(('/'));
+              res.redirect(('/login'));
             });
           }
         })
@@ -164,11 +154,11 @@ app.post('/users/signup', async (req, res) => {
 // ********************************* login ******* login ******* login *******
 app.post("/users/login",
   passport.authenticate('local', {
-    successRedirect: '/future-self',
+    successRedirect: "/future-self",
     failureRedirect: "/login",
     failureFlash: true
   }))
-// ******************************** checkAuth ***** checkAuth ***** checkAuth *****
+  // ******************************** checkAuth ***** checkAuth ***** checkAuth *****
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return res.redirect('/future-self')
@@ -182,7 +172,7 @@ function checkNotAuthenticated(req, res, next) {
   }
   res.redirect('/login')
 }
-// ********************************** listening ****** listening ****** listening ******
+
 const PORT = process.env.PORT || 8081
 // start the server
 /* https.createServer({

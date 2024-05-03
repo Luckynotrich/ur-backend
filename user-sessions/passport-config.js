@@ -3,10 +3,12 @@ const db = require('../routes/db/fs_pool.js');
 const pool = db.getPool();
 const bcrypt = require("bcrypt");
 
-function initialize(passport) {
 
+function initialize(passport) {
+    
     const authenticateUser = (email, password, done) => {
-        console.log('authenticate');
+        
+        console.log('authenticateUser');
         pool.connect(async (err, client, release) => {
             if (err) return console.error('Error acquiring client', err.stack);
             client.query(`SELECT * FROM users WHERE email = $1`,[email],
@@ -33,15 +35,21 @@ function initialize(passport) {
         usernameField: "email",
         passwordField: "password"
     },
-        authenticateUser
+        authenticateUser,  
     )
     );
     passport.serializeUser((user, done) => {
         console.log('serialize user.id =',user.id);
-        done(null, user.id)});
+       return done(null, {
+            id: user.id,
+            username: user.user_name,
+            email: user.email
+        })
+    });
     
-    passport.deserializeUser((id, done) => {
-        console.log('deserialize');
+    passport.deserializeUser((user, done) => {
+        console.log('deserialize =', user.id);
+        let id = user.id;
         pool.connect(async (err, client, release) => {
             if (err) return console.error('Error acquiring client', err.stack);
             client.query(
@@ -53,6 +61,7 @@ function initialize(passport) {
             if (err) return console.error('Error executing user query', err.msg)
         }
         )
+        // return done(null,user)
     });
 }
 module.exports = initialize;

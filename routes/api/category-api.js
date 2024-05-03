@@ -1,5 +1,4 @@
 const express = require("express");
-// const app = express;
 const router = express.Router();
 const multiparty = require('multiparty');
 
@@ -183,26 +182,6 @@ router.delete('/delete/:id', (req, res) => {
     })
   }
 })
-
-
-// router.delete('/delete/:id', async (req, res) => {
-//   await Object.keys(fields).forEach((property) => {//async await must resolve
-//     if (fields[property].toString().length > 0 &&
-//       fields[property].toString() !== ' ') {
-//         if(property.includes('id')){
-//         res.json({
-//           msg: 'Member deleted', members: members.filter(member =>
-//             member.id !== parseInt(req.params.id))
-//         });}
-//         else {
-//           res.status(400).json({ msg: `No member with the id of ${req.params.id}` });
-//         }
-//     }
-//   })
-  
-  
-// });
-
 
 async function writeCatFile(categories) {
   const filePath = path.resolve(__dirname, "../../data/catFile.js");
