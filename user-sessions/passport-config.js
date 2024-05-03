@@ -39,7 +39,7 @@ function initialize(passport) {
     )
     );
     passport.serializeUser((user, done) => {
-        console.log('serialize user.id =',user.id);
+       // console.log('serialize user.id =',user.id);
        return done(null, {
             id: user.id,
             username: user.user_name,
@@ -48,7 +48,7 @@ function initialize(passport) {
     });
     
     passport.deserializeUser((user, done) => {
-        console.log('deserialize =', user.id);
+       // console.log('deserialize =', user.id);
         let id = user.id;
         pool.connect(async (err, client, release) => {
             if (err) return console.error('Error acquiring client', err.stack);

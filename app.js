@@ -63,7 +63,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Category api routes
-// app.use(checkAuthenticated,express.static(path.join(__dirname,'./','dist')))
+app.use((req,res,next)=>{
+if(req.isAuthenticated) app.use(express.static(path.join(__dirname,'./','dist')))
+next()
+})
+app.use(express.static(path.join(__dirname,'./','dist')))
 app.use(express.static(path.join(__dirname, './', 'dist/', 'assets/')));
 app.use('/api/category-api', require('./routes/api/category-api.js'));
 app.use('/api/preference-api', require('./routes/api/preference-api.js'));
@@ -76,13 +80,14 @@ app.get('/', (req, res) => {
 });
 
 app.get('/login', checkAuthenticated, (req, res) => {
-  res.render('login')
+  res.render('/future-self')
 })
 
-app.get('/future-self', checkNotAuthenticated, (req, res) => {
-  console.log('login')
+app.get('/future-self',  (req, res) => {
+  console.log('future-self')
+  if(req.isAuthenticated){
   res.sendFile(path.join(__dirname, './dist/index.html'))
-  app.use(express.static(path.join(__dirname, './', 'dist/')))
+}
 })
 
 app.get('/signup', checkAuthenticated, (req, res) => {
@@ -91,11 +96,11 @@ app.get('/signup', checkAuthenticated, (req, res) => {
 // ************************************* future-self ******* future-self *******
 /* app.get('/future-self/' */
 app.get("/getId", async (req, res) => {
-console.log('getId');
+// console.log('getId');
   if (req.isAuthenticated()) {
     
     let id = req.user.id;
-    console.log('/getId id =', id)
+    // console.log('/getId id =', id)
     res.status(200).json(await id);
   }
 
@@ -180,6 +185,7 @@ function checkNotAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next()
   }
+  console.log("not Authenticated")
   res.redirect('/login')
 }
 // ********************************** listening ****** listening ****** listening ******
