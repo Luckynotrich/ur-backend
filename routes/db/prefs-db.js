@@ -74,7 +74,7 @@ const updatePrefs = async (_category) => {
 // while (await !typeof(_category.id)== 'number' && await _category.id === undefined || await _category.id === null ) {
 //     await setTimeout(() => { console.log('waiting for id') }, 100)
 // }
-console.log('updatePrefs _category.id = ', _category.id)
+console.log('updatePrefs _category.id = ', await _category.id)
    let res = await update();
     // await res.status(200).json({ msg: "Category updated", _category });
 }

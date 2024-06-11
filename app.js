@@ -1,6 +1,4 @@
 
-// const open = require('open')
-// const https = require('https')
 const fs = require('fs');
 const apndFile = require('../utils/apnd-file.js');
 const express = require('express');
@@ -39,10 +37,10 @@ app.set('view engine', "ejs");
 
 app.use((req, res, next) => {
   const now = new Date();
-  let idData = date.format(now, 'YYYY/MM/DD HH:mm:ss');
+  let idData = `\n${date.format(now, 'YYYY/MM/DD HH:mm:ss')}\n`;
   let reqPath = `\n${idData} path: ${req.path} \n`;
-  // console.log(path.join(__dirname, './dist/',req.path));
-  // apndFile('log_app.log', reqPath);
+  apndFile('stderr.log', idData);
+  apndFile('log_app.log', reqPath);
   errorPath = req.path;
   next() // calling next middleware function or handler
 })
@@ -55,37 +53,42 @@ app.use(expressSession({
   secret: process.env.SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: /* 30 * 24 *  */5 * 60 * 1000 }
+  cookie: {
+    httpOnly: true,
+    Secure: true,
+    SameSite: "None",
+    path: ['/'],
+    maxAge: 60 * 60 * 1000 * 5
+  }
   // Insert connect-pg-simple options here
 }))
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Category api routes
+//****************************************************** dist route ************ dist route
 app.use((req, res, next) => {
   if (req.isAuthenticated) app.use(express.static(path.join(__dirname, './', 'dist')))
   next()
 })
-// app.use(express.static(path.join(__dirname, './', 'dist')))
+
 app.use(express.static(path.join(__dirname, './', 'dist/', 'assets/')));
 app.use('/api/category-api', require('./routes/api/category-api.js'));
 app.use('/api/preference-api', require('./routes/api/preference-api.js'));
 app.use('/api/review-api', require('./routes/api/review-api.js'));
 
 
-app.get('/', (req, res) => {
-  logout(req, res);
+app.get('/', (req, res, next) => {
+  logout(req, res, next);
   res.render("pages/index")
 });
 
 app.get('/login', checkAuthenticated, (req, res) => {
   res.render('login')
 })
-
+// ************************************* future-self ******* future-self *******
 app.get('/future-self', (req, res) => {
-  console.log('future-self')
-  if (req.isAuthenticated) {
+    if (req.isAuthenticated) {
     res.sendFile(path.join(__dirname, './dist/index.html'))
   }
 })
@@ -93,17 +96,15 @@ app.get('/future-self', (req, res) => {
 app.get('/signup', checkAuthenticated, (req, res) => {
   res.render("signup")
 });
-// ************************************* future-self ******* future-self *******
+// ************************************* getId ******* getId *******
 /* app.get('/future-self/' */
 app.get("/getId", async (req, res) => {
-  // console.log('getId');
+  
   if (req.isAuthenticated()) {
-
     let id = req.user.id;
     console.log('/getId id =', id)
     res.status(200).json(await id);
   }
-
 });
 
 // called from app ************** post logout ******* post logout ******* post logout *******

@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const multiparty = require('multiparty');
 
-
+const apndfile = require('../../../utils/apnd-file.js')
 const getAllCats = require('../db/get-all-cats-db')
 const { updatePrefs } = require('../db/prefs-db.js')
 let db = require('../db/fs_pool.js');
@@ -62,7 +62,7 @@ router.post("/addNew/", async (req, res) => {
   let category = { name, id, pros: [], cons: [] }
 
   await form.parse(req, async (err, fields) => { //push must be inside await form.parse -- insertCat fails without await
-    // console.log('fields = ', fields)
+     console.log('fields = ', fields)
     await Object.keys(fields).forEach((property) => {//async await must resolve 
 
       if (property.includes('name')) {
@@ -86,7 +86,8 @@ router.post("/addNew/", async (req, res) => {
         client.query('INSERT INTO category(userid, cat_name) '
           + ' values($1, $2)'
           + ' returning id;', [userId, name],
-          async (err, result) => {
+          async (err,result) => {
+            // await apndfile('log_app.log',await result);
             category.id = await result.rows[0].id;
             await res.status(200).json(await category);
             await updatePrefs(category)
