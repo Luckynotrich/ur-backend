@@ -1,4 +1,3 @@
-const https = require('https')
 
 const fs = require('fs');
 const apndFile = require('../utils/apnd-file.js');
@@ -24,11 +23,8 @@ initialize(passport);
 const flash = require('express-flash');
 const bcrypt = require('bcrypt');
 
-const allowedDomains = ["https://futureonreview.com","https://futureonreview.com/future-self"];
-app.use(cors({
-  origin: allowedDomains,
-  credentials: true
-}));
+
+app.use(cors());
 app.use('/favicon.ico', express.static('./favicon.ico'));
 app.use(logger);
 app.use(express.json());
@@ -39,20 +35,15 @@ app.use(flash());
 app.set("views", path.join(__dirname, "views"));
 app.set('view engine', "ejs");
 
-//****************************** logging ************** logging *************
-
 app.use((req, res, next) => {
   const now = new Date();
   let idData = `\n${date.format(now, 'YYYY/MM/DD HH:mm:ss')}\n`;
   let reqPath = `\n${idData} path: ${req.path} \n`;
   apndFile('stderr.log', idData);
-apndFile('log_app.log', reqPath);
+  apndFile('log_app.log', reqPath);
   errorPath = req.path;
   next() // calling next middleware function or handler
 })
-
-//************************ express session ********* express session *************
-
 app.use(expressSession({
   store: new pgSession({
     pool: pool,
@@ -62,10 +53,10 @@ app.use(expressSession({
   secret: process.env.SECRET,
   resave: false,
   saveUninitialized: false,
-cookie: {
+  cookie: {
     httpOnly: true,
     Secure: true,
-    SameSite: 'None',
+    SameSite: "None",
     path: ['/'],
     maxAge: 60 * 60 * 1000 * 5
   }
@@ -76,55 +67,42 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 //****************************************************** dist route ************ dist route
-
 app.use((req, res, next) => {
   if (req.isAuthenticated) app.use(express.static(path.join(__dirname, './', 'dist')))
   next()
 })
-
-// ********************************************* assets & api routes *********assets & api routes ****
 
 app.use(express.static(path.join(__dirname, './', 'dist/', 'assets/')));
 app.use('/api/category-api', require('./routes/api/category-api.js'));
 app.use('/api/preference-api', require('./routes/api/preference-api.js'));
 app.use('/api/review-api', require('./routes/api/review-api.js'));
 
-//************************************ get '/' ************** get '/' *******
 
-app.get('/', async (req, res, next) => {
+app.get('/', (req, res, next) => {
   logout(req, res, next);
-  // if (await req.isAuthenticated) {
-    // res.sendFile(path.join(__dirname, './dist/index.html'))
-  // }
-   res.render("pages/index")
+  res.render("pages/index")
 });
-//************************************** login *********** login ********
 
 app.get('/login', checkAuthenticated, (req, res) => {
   res.render('login')
 })
-
 // ************************************* future-self ******* future-self *******
-
 app.get('/future-self', (req, res) => {
-
-if (req.isAuthenticated) {
+    if (req.isAuthenticated) {
     res.sendFile(path.join(__dirname, './dist/index.html'))
   }
 })
 
-//***************************************/signup************/signup*********
-
 app.get('/signup', checkAuthenticated, (req, res) => {
   res.render("signup")
 });
-
 // ************************************* getId ******* getId *******
-
+/* app.get('/future-self/' */
 app.get("/getId", async (req, res) => {
   
   if (req.isAuthenticated()) {
     let id = req.user.id;
+    console.log('/getId id =', id)
     res.status(200).json(await id);
   }
 });
@@ -135,16 +113,14 @@ app.post('/users/logout', (req, res, next) => {
   req.flash('success_msg1', "You have logged out.")
   res.redirect('/')
 })
-function logout(req, res, next) {
+function logout(req, res) {
   res.clearCookie('connect.sid');
   req.logout(function (err) {
     if (err) { return next(err); }
   });//a function that comes with passport
   req.flash('logged_status', 'false')
 }
-
 // ****************************** post signup ******** post signup ******** post signup ********
-
 app.post('/users/signup', async (req, res) => {
   let { name, email, password, password2 } = req.body;
   let errors = [];
@@ -201,6 +177,7 @@ app.post("/users/login",
 // ******************************** checkAuth ***** checkAuth ***** checkAuth *****
 function checkAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
+    console.log('checkAuthenticated')
     return res.redirect('/future-self')
   }
   next();
@@ -214,14 +191,15 @@ function checkNotAuthenticated(req, res, next) {
   console.log("not Authenticated")
   res.redirect('/login')
 }
-// *************************************// Server //*********************//Server*********** */
-const PORT = process.env.PORT;
-
-//https.createServer({
-//      key: fs.readFileSync('key.pem'),
-//      cert: fs.readFileSync('cert.pem'),
-//}, app).listen(PORT)
+// ********************************** listening ****** listening ****** listening ******
+const PORT = process.env.PORT || 8081
+// start the server
+/* https.createServer({
+      key: fs.readFileSync('key.pem'),
+      cert: fs.readFileSync('cert.pem'),
+}, app) */
 app.listen(
   PORT,
-  //console.log(`Something gruesome is happening at http://localhost:${PORT}`)
+  console.log(`Something gruesome is happening at http://localhost:${PORT}`)
 );
+// (async () => { await open(process.env.SERVER + PORT + '/', { app: { name: 'google-chrome' } }) })()

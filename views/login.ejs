@@ -19,19 +19,22 @@
      <%}else {%><li>&nbsp&nbsp&nbsp&nbsp&nbsp</li> <% } %>
      </ul>
     </div>
-    <form action="/users/login" method="post" target="_self">
+    <!-- <form action="/users/login" method="post" target="_self"> -->
       <div style="display: flex;flex-direction: column;">
         <label for="email">Email:</label>
-        <input autofocus autocomplete="" type="email" id="email" name="email"  required>
+        <input autofocus  type="email" id="email" name="email"  required maxlength="50">
       </div>
       <div style="display: flex;flex-direction: column;">
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password"  required>
+        <input type="password" autocomplete="current-password" id="password" name="password"  required maxlength="20">
+      </div>
+      <div style="display: flex;flex-direction:row;">
+        <input type="button" onclick="togglePw('')" style="width:1rem;height:1rem" /> Show Password
       </div>
       <div style="margin-left: 2rem;">
-        <input type="submit" value="Login" >
+        <input type="submit" onclick="togglePw('password')" value="Login" />
       </div>
-    </form>
+    <!-- </form> -->
     <div style="margin-left: 2rem;">
       <a href="/signup">Need to Sign up?</a>
       <footer>
@@ -39,7 +42,15 @@
 </footer>
 </div>
 <script>
-
+function togglePw(set) {
+  let pw = document.getElementById("password");;
+  if(set==='password')pw.type = "text"
+  if (pw.type === "password") {
+    pw.type = "text";
+  } else {
+    pw.type = "password";
+  }
+}
 </script>
   </body>
   </html>

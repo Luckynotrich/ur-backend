@@ -28,7 +28,7 @@
     <div>
       <div style="display: flex;flex-direction: column;">
 
-        <label for="name">Name: (minimum 4 characters)</label>
+        <label for="name">Name: - min 4 characters</label>
         <input type="text" id="name" name="name" minlength="4" required>
       </div>
       <div>
@@ -38,8 +38,11 @@
           <input type="email" id="email" name="email" required>
         </div>
         <div style="display: flex;flex-direction: column;">
-          <label for="password">Password: (minimum 6 characters)</label>
-          <input type="password" id="password" name="password" minlength='6' required>
+          <label for="password">Password: - min 6 characters</label>
+          <input type="password"  autocomplete="current-password" id="password" name="password" minlength='6' required>
+        </div>
+        <div style"display: flex;flex-direction:row;">
+          <input type="button" onclick="togglePw('')" style="width:1rem;height:1rem"> Show Password
         </div>
         <div>
           <div style="display: flex;flex-direction: column; margin-left: 0px;">
@@ -47,16 +50,27 @@
             <input type="password" id="password2" name="password2" required>
           </div>
           <div>
-            <input type="submit" value="Sign-up">
+            <input type="submit" onclick="togglePw('password')" value="Sign-up">
           </div>
   </form>
   <div style="display: flex;flex-direction: row;">
-    <a href="/login">Already regisered?&nbsp</a>
+    <a href="/future-self">Already regisered?&nbsp</a>
 
     <footer>
       <%- include('./partials/home_footer'); %>
     </footer>
   </div>
+  <script>
+    function togglePw(set) {
+      let pw = document.getElementById("password");;
+      if(set==='password')pw.type = "text"
+      if (pw.type === "password") {
+        pw.type = "text";
+      } else {
+        pw.type = "password";
+      }
+    }
+    </script>
 </body>
 
 </html>
