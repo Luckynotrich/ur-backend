@@ -24,7 +24,7 @@ initialize(passport);
 const flash = require('express-flash');
 const bcrypt = require('bcrypt');
 
-const allowedDomains = ["https://futureonreview.com","https://futureonreview.com/future-self"];
+const allowedDomains = ["https://futureonreview.com","https://futureonreview.com/future-self","http://127.0.0.1:5173",];
 app.use(cors({
   origin: allowedDomains,
   credentials: true
@@ -217,11 +217,11 @@ function checkNotAuthenticated(req, res, next) {
 // *************************************// Server //*********************//Server*********** */
 const PORT = process.env.PORT;
 
-//https.createServer({
-//      key: fs.readFileSync('key.pem'),
-//      cert: fs.readFileSync('cert.pem'),
-//}, app).listen(PORT)
-app.listen(
-  PORT,
-  //console.log(`Something gruesome is happening at http://localhost:${PORT}`)
-);
+https.createServer({
+     key: fs.readFileSync('./cert/key.pem'),
+     cert: fs.readFileSync('./cert/cert.pem'),
+}, app).listen(PORT)
+// app.listen(
+//   PORT,
+//   //console.log(`Something gruesome is happening at http://localhost:${PORT}`)
+// );
